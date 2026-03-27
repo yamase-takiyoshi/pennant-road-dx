@@ -1,0 +1,1681 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pennant Manager DX Complete Fix</title>
+  <style>
+    :root{
+      --bg1:#16365c;
+      --bg2:#0b1423;
+      --bg3:#040912;
+      --line:rgba(255,255,255,.08);
+      --line2:rgba(255,255,255,.05);
+      --text:#edf6ff;
+      --muted:#9fb6cb;
+      --blue:#7dcaff;
+      --blue2:#dff3ff;
+      --gold:#ffd66c;
+      --green:#88ecb1;
+      --red:#ff9ca2;
+      --orange:#ffb66c;
+      --purple:#c8adff;
+      --ball:#61dd74;
+      --strike:#ffd25f;
+      --out:#ff6d6d;
+      --shadow:0 22px 54px rgba(0,0,0,.34);
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{height:100%}
+    body{
+      margin:0;
+      padding:12px;
+      color:var(--text);
+      font-family:"Hiragino Sans","Yu Gothic UI","Meiryo",system-ui,sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(98,172,255,.22), transparent 22%),
+        radial-gradient(circle at left bottom, rgba(255,214,108,.08), transparent 20%),
+        linear-gradient(180deg,var(--bg1),var(--bg2) 42%,var(--bg3));
+    }
+    .app{
+      width:min(1500px,100%);
+      margin:0 auto;
+      display:grid;
+      grid-template-columns:300px 1fr;
+      gap:12px;
+    }
+    .card{
+      background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));
+      border:1px solid var(--line);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(10px);
+    }
+    .sidebar,.main{
+      padding:14px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .hero{
+      padding:18px;
+      border-radius:18px;
+      background:linear-gradient(135deg,#173659,#214d7b 58%,#3a8fdb);
+      border:1px solid rgba(255,255,255,.12);
+      position:relative;
+      overflow:hidden;
+    }
+    .hero::after{
+      content:"";
+      position:absolute;
+      right:-30px;
+      top:-30px;
+      width:180px;
+      height:180px;
+      border-radius:50%;
+      background:radial-gradient(circle,rgba(255,255,255,.18),transparent 70%);
+      pointer-events:none;
+    }
+    .logo{
+      font-size:30px;
+      font-weight:900;
+      line-height:1.02;
+      letter-spacing:.04em;
+    }
+    .logo span{color:var(--blue2)}
+    .sub{
+      margin-top:8px;
+      font-size:12px;
+      line-height:1.75;
+      color:rgba(235,246,255,.82);
+    }
+    .box,.panel,.stage{
+      padding:13px;
+      border-radius:18px;
+      background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));
+      border:1px solid var(--line2);
+    }
+    .title{
+      font-size:12px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:var(--blue2);
+      font-weight:900;
+      margin-bottom:8px;
+    }
+    .scoreboard{
+      padding:12px 14px;
+      border-radius:18px;
+      background:
+        linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02)),
+        linear-gradient(180deg,#15355a,#09121f);
+      border:1px solid rgba(255,255,255,.10);
+      display:grid;
+      grid-template-columns:1fr auto auto auto auto auto auto;
+      align-items:center;
+      gap:8px;
+    }
+    .team-label{
+      font-weight:900;
+      font-size:15px;
+      color:#f6fbff;
+      letter-spacing:.03em;
+    }
+    .pill,.score-big{
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.08);
+      white-space:nowrap;
+    }
+    .pill{
+      padding:6px 10px;
+      font-size:12px;
+      color:var(--muted);
+      background:rgba(255,255,255,.06);
+    }
+    .score-big{
+      padding:5px 0;
+      min-width:54px;
+      text-align:center;
+      font-size:29px;
+      font-weight:900;
+      color:var(--gold);
+      background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.03));
+    }
+    .top-panels,.game-layout{
+      display:grid;
+      gap:12px;
+    }
+    .top-panels{grid-template-columns:1.18fr .82fr}
+    .game-layout{grid-template-columns:1.03fr .97fr}
+    .stage{
+      min-height:520px;
+      background:linear-gradient(180deg,rgba(8,14,25,.92),rgba(5,10,18,.98));
+    }
+    .headline{
+      font-size:20px;
+      font-weight:900;
+      color:var(--blue2);
+      margin-bottom:10px;
+    }
+    .narration{
+      padding:14px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.015));
+      line-height:1.85;
+      min-height:160px;
+      white-space:pre-wrap;
+    }
+    .mini-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:10px;
+    }
+    .chip{
+      padding:7px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.06);
+      font-size:12px;
+      color:var(--muted);
+    }
+    .actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:12px;
+    }
+    .actions.secondary{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:8px;
+    }
+    button{
+      appearance:none;
+      border:none;
+      border-radius:12px;
+      padding:11px 14px;
+      font-size:14px;
+      font-weight:900;
+      cursor:pointer;
+      color:#082031;
+      background:linear-gradient(180deg,#aee5ff,#72c9ff);
+      box-shadow:0 8px 20px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.22);
+    }
+    button.secondary{
+      background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.05));
+      border:1px solid rgba(255,255,255,.08);
+      color:var(--text);
+    }
+    button.gold{background:linear-gradient(180deg,#ffe6a2,#ffd66c)}
+    button.green{background:linear-gradient(180deg,#bcf2cf,#88ecb1)}
+    button.red{background:linear-gradient(180deg,#ffbdc2,#ff9198)}
+    button.purple{background:linear-gradient(180deg,#e4d6ff,#c8adff)}
+    button.orange{background:linear-gradient(180deg,#ffd6a8,#ffb66c)}
+    button:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+    .fieldWrap{display:grid;gap:10px}
+    .diamond{
+      width:150px;
+      height:150px;
+      margin:0 auto;
+      position:relative;
+    }
+    .base{
+      width:22px;
+      height:22px;
+      border-radius:4px;
+      transform:rotate(45deg);
+      position:absolute;
+      background:rgba(255,255,255,.08);
+      border:2px solid rgba(255,255,255,.20);
+    }
+    .base.active{
+      background:rgba(255,214,108,.95);
+      box-shadow:0 0 14px rgba(255,214,108,.45);
+    }
+    .base.home{left:64px;bottom:0}
+    .base.first{right:0;top:64px}
+    .base.second{left:64px;top:0}
+    .base.third{left:0;top:64px}
+    .diamond-label{
+      position:absolute;
+      font-size:11px;
+      color:var(--muted);
+    }
+    .l1{right:-10px;top:88px}
+    .l2{left:66px;top:-16px}
+    .l3{left:-10px;top:88px}
+    .lh{left:56px;bottom:-20px}
+    .row{
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:8px;
+      font-size:13px;
+      align-items:center;
+    }
+    .mini-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:8px;
+    }
+    .smallbox,.player-card,.save-slot{
+      padding:10px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.06);
+      background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.02));
+    }
+    .player-name{font-weight:900;margin-bottom:4px}
+    .tiny{font-size:12px;color:var(--muted);line-height:1.6}
+    .inning-board{
+      display:grid;
+      grid-template-columns:repeat(9,1fr);
+      gap:4px;
+    }
+    .inning-cell{
+      padding:6px 4px;
+      text-align:center;
+      font-size:12px;
+      border-radius:8px;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.04);
+    }
+    .log{
+      height:380px;
+      overflow:auto;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .log-line{
+      padding:9px 10px;
+      border-radius:12px;
+      background:rgba(255,255,255,.035);
+      font-size:13px;
+      line-height:1.6;
+    }
+    .good{border-left:3px solid var(--green)}
+    .bad{border-left:3px solid var(--red)}
+    .em{border-left:3px solid var(--gold)}
+    .special{border-left:3px solid var(--purple)}
+    .save-grid,.standings,.bench-list{display:grid;gap:8px}
+    .slot-actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:8px;
+    }
+    .tvline{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      padding:10px 12px;
+      border-radius:16px;
+      background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.015));
+      border:1px solid var(--line);
+    }
+    .tvlabel{
+      font-size:12px;
+      color:var(--blue2);
+      font-weight:900;
+      letter-spacing:.12em;
+    }
+    .countWrap{
+      display:flex;
+      gap:14px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .group{
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+    .group span{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:900;
+      width:16px;
+    }
+    .lamp{
+      width:14px;
+      height:14px;
+      border-radius:50%;
+      background:#273241;
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 1px 3px rgba(0,0,0,.35);
+    }
+    .lamp.ball.on{background:var(--ball);box-shadow:0 0 12px rgba(97,221,116,.6)}
+    .lamp.strike.on{background:var(--strike);box-shadow:0 0 12px rgba(255,210,95,.6)}
+    .lamp.out.on{background:var(--out);box-shadow:0 0 12px rgba(255,109,109,.6)}
+    @media (max-width:1180px){
+      .app,.top-panels,.game-layout{grid-template-columns:1fr}
+    }
+    @media (max-width:760px){
+      body{padding:8px}
+      .scoreboard{grid-template-columns:1fr auto auto}
+      .actions.secondary{grid-template-columns:1fr}
+      .mini-grid{grid-template-columns:1fr}
+      .slot-actions button,.actions button{width:100%}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar card">
+      <section class="hero">
+        <div class="logo">PENNANT<br><span>MANAGER DX</span></div>
+        <div class="sub">監督としてサインを出し、カウントを読み、投手のスタミナや守備力まで見極めて日本一を目指す、テキスト主体の本格監督ゲーム。</div>
+      </section>
+
+      <section class="box">
+        <div class="title">League Standing</div>
+        <div class="standings" id="standingsBox"></div>
+      </section>
+
+      <section class="box">
+        <div class="title">Save / Load</div>
+        <div class="save-grid" id="saveSlots"></div>
+      </section>
+    </aside>
+
+    <main class="main card">
+      <section class="scoreboard">
+        <div class="team-label" id="scoreLabel">TOKYO BLUE STARS 監督室</div>
+        <div class="pill" id="phasePill">TITLE</div>
+        <div class="pill" id="modePill">AUTO</div>
+        <div class="pill" id="pitchTypePill">-</div>
+        <div class="pill" id="inningPill">1回表</div>
+        <div class="score-big" id="homeScore">0</div>
+        <div class="score-big" id="awayScore">0</div>
+      </section>
+
+      <div class="top-panels">
+        <section class="stage">
+          <div class="headline" id="headline">監督室</div>
+          <div class="narration" id="narration">青いユニフォームが並ぶロッカールーム。今日から、あなたがこのチームの監督です。選手を選び、サインを出し、ペナントレースを勝ち抜いて日本一を目指してください。</div>
+
+          <div class="tvline">
+            <div class="tvlabel">B S O</div>
+            <div class="countWrap">
+              <div class="group"><span>B</span><i class="lamp ball" id="b1"></i><i class="lamp ball" id="b2"></i><i class="lamp ball" id="b3"></i><i class="lamp ball" id="b4"></i></div>
+              <div class="group"><span>S</span><i class="lamp strike" id="s1"></i><i class="lamp strike" id="s2"></i><i class="lamp strike" id="s3"></i></div>
+              <div class="group"><span>O</span><i class="lamp out" id="o1"></i><i class="lamp out" id="o2"></i><i class="lamp out" id="o3"></i></div>
+            </div>
+          </div>
+
+          <div class="mini-row">
+            <div class="chip" id="batterChip">打者 -</div>
+            <div class="chip" id="pitcherChip">投手 -</div>
+            <div class="chip" id="baseChip">走者なし</div>
+            <div class="chip" id="pitchPlanHint">打球 -</div>
+          </div>
+
+          <div class="actions" id="primaryActions"></div>
+          <div class="actions secondary" id="secondaryActions"></div>
+        </section>
+
+        <section class="panel">
+          <div class="title">Field Situation</div>
+          <div class="fieldWrap">
+            <div class="diamond">
+              <div class="base second" id="base2"></div>
+              <div class="base third" id="base3"></div>
+              <div class="base first" id="base1"></div>
+              <div class="base home"></div>
+              <div class="diamond-label l1">1B</div>
+              <div class="diamond-label l2">2B</div>
+              <div class="diamond-label l3">3B</div>
+              <div class="diamond-label lh">HOME</div>
+            </div>
+
+            <div class="row"><span>攻撃チーム</span><strong id="offenseTeam">-</strong></div>
+            <div class="row"><span>打者</span><strong id="batterName">-</strong></div>
+            <div class="row"><span>投手</span><strong id="pitcherName">-</strong></div>
+            <div class="row"><span>カウント</span><strong id="countText">-</strong></div>
+
+            <div class="mini-grid">
+              <div class="smallbox">
+                <div class="player-name">守備力影響</div>
+                <div class="tiny" id="defenseHint">-</div>
+              </div>
+              <div class="smallbox">
+                <div class="player-name">投手スタミナ</div>
+                <div class="tiny" id="pitcherStaminaHint">-</div>
+              </div>
+            </div>
+
+            <div class="inning-board" id="inningBoard"></div>
+          </div>
+        </section>
+      </div>
+
+      <div class="game-layout">
+        <section class="panel">
+          <div class="title">実況ログ</div>
+          <div class="log" id="logBox"></div>
+        </section>
+
+        <section class="panel">
+          <div class="title">成績 / ベンチ</div>
+          <div class="bench-list" id="benchBox"></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+  (() => {
+    const SAVE_KEY = 'pm_dx_complete_fix_v2';
+    const LEAGUE_TEAMS = ['TOKYO BLUE STARS','OSAKA TIGERS','NAGOYA COMETS','YOKOHAMA WAVES','FUKUOKA PHOENIX','SENDAI NORTHERNS'];
+    const $ = id => document.getElementById(id);
+
+    const els = {
+      standingsBox:$('standingsBox'),
+      saveSlots:$('saveSlots'),
+      scoreLabel:$('scoreLabel'),
+      phasePill:$('phasePill'),
+      modePill:$('modePill'),
+      pitchTypePill:$('pitchTypePill'),
+      inningPill:$('inningPill'),
+      homeScore:$('homeScore'),
+      awayScore:$('awayScore'),
+      headline:$('headline'),
+      narration:$('narration'),
+      primaryActions:$('primaryActions'),
+      secondaryActions:$('secondaryActions'),
+      base1:$('base1'),
+      base2:$('base2'),
+      base3:$('base3'),
+      offenseTeam:$('offenseTeam'),
+      batterName:$('batterName'),
+      pitcherName:$('pitcherName'),
+      countText:$('countText'),
+      defenseHint:$('defenseHint'),
+      pitcherStaminaHint:$('pitcherStaminaHint'),
+      inningBoard:$('inningBoard'),
+      logBox:$('logBox'),
+      benchBox:$('benchBox'),
+      batterChip:$('batterChip'),
+      pitcherChip:$('pitcherChip'),
+      baseChip:$('baseChip'),
+      pitchPlanHint:$('pitchPlanHint'),
+      b1:$('b1'),
+      b2:$('b2'),
+      b3:$('b3'),
+      b4:$('b4'),
+      s1:$('s1'),
+      s2:$('s2'),
+      s3:$('s3'),
+      o1:$('o1'),
+      o2:$('o2'),
+      o3:$('o3')
+    };
+
+    const randi = (min,max) => Math.floor(Math.random()*(max-min+1))+min;
+    const chance = pct => Math.random()*100 < pct;
+    const clone = obj => JSON.parse(JSON.stringify(obj));
+
+    function makeBatStats(){ return {ab:0,h:0,d2:0,d3:0,hr:0,rbi:0,bb:0,so:0,sb:0,r:0}; }
+    function makePitchStats(){ return {outs:0,er:0,so:0,bb:0,w:0,l:0,sv:0,h:0,hr:0}; }
+    function batAvg(s){ return s.ab ? (s.h / s.ab).toFixed(3) : '.000'; }
+    function era(s){ return s.outs ? ((s.er * 27) / s.outs).toFixed(2) : '0.00'; }
+
+    function createHomeHitters(){
+      return [
+        {name:'青山',pos:'CF',contact:72,power:56,speed:78,defense:71,stats:makeBatStats()},
+        {name:'立石',pos:'2B',contact:68,power:54,speed:66,defense:69,stats:makeBatStats()},
+        {name:'黒川',pos:'RF',contact:64,power:73,speed:58,defense:60,stats:makeBatStats()},
+        {name:'尾崎',pos:'1B',contact:60,power:79,speed:42,defense:57,stats:makeBatStats()},
+        {name:'真鍋',pos:'LF',contact:65,power:61,speed:59,defense:58,stats:makeBatStats()},
+        {name:'市原',pos:'3B',contact:58,power:67,speed:49,defense:63,stats:makeBatStats()},
+        {name:'坂東',pos:'SS',contact:63,power:50,speed:71,defense:76,stats:makeBatStats()},
+        {name:'広瀬',pos:'C',contact:55,power:49,speed:35,defense:74,stats:makeBatStats()},
+        {name:'西岡',pos:'DH',contact:62,power:65,speed:44,defense:45,stats:makeBatStats()},
+        {name:'滝沢',pos:'OF',contact:57,power:46,speed:73,defense:62,stats:makeBatStats()},
+        {name:'花村',pos:'INF',contact:54,power:45,speed:55,defense:60,stats:makeBatStats()},
+        {name:'北村',pos:'OF',contact:56,power:48,speed:68,defense:61,stats:makeBatStats()}
+      ];
+    }
+
+    function createHomePitchers(){
+      return [
+        {name:'有馬',role:'SP',stamina:100,control:67,stuff:71,pitches:['ストレート','スライダー','フォーク'],stats:makePitchStats()},
+        {name:'神田',role:'SP',stamina:96,control:72,stuff:65,pitches:['ストレート','カーブ','チェンジアップ'],stats:makePitchStats()},
+        {name:'若林',role:'SP',stamina:94,control:64,stuff:69,pitches:['ストレート','ツーシーム','スプリット'],stats:makePitchStats()},
+        {name:'堀',role:'RP',stamina:74,control:59,stuff:68,pitches:['ストレート','スライダー'],stats:makePitchStats()},
+        {name:'戸塚',role:'RP',stamina:71,control:66,stuff:60,pitches:['ストレート','カット','シンカー'],stats:makePitchStats()},
+        {name:'片桐',role:'CL',stamina:68,control:63,stuff:75,pitches:['ストレート','スライダー','フォーク'],stats:makePitchStats()}
+      ];
+    }
+
+    function createAwayLineup(){
+      return [
+        {name:'吉井',contact:63,power:52,speed:69,defense:62},
+        {name:'佐伯',contact:61,power:55,speed:58,defense:60},
+        {name:'南',contact:58,power:69,speed:52,defense:56},
+        {name:'本城',contact:67,power:63,speed:57,defense:59},
+        {name:'榊',contact:54,power:73,speed:49,defense:50},
+        {name:'大津',contact:60,power:50,speed:62,defense:61},
+        {name:'永島',contact:57,power:48,speed:66,defense:68},
+        {name:'篠原',contact:51,power:41,speed:38,defense:71},
+        {name:'宮下',contact:59,power:46,speed:61,defense:58}
+      ];
+    }
+
+    function createAwayPitchers(){
+      return [
+        {name:'工藤',role:'SP',stamina:98,control:66,stuff:69,pitches:['ストレート','スライダー','フォーク']},
+        {name:'阿久津',role:'RP',stamina:72,control:61,stuff:63,pitches:['ストレート','カーブ']},
+        {name:'榎本',role:'CL',stamina:66,control:64,stuff:74,pitches:['ストレート','スライダー','スプリット']}
+      ];
+    }
+
+    function createState(){
+      return {
+        mode:'title',
+        scheduleIndex:0,
+        seasonLen:12,
+        standings: LEAGUE_TEAMS.map(name => ({name,w:0,l:0})),
+        record:{w:0,l:0},
+        logs:[{text:'監督ペナントロード DX Complete Fix へようこそ。',type:'em'}],
+        roster:{ hitters:createHomeHitters(), pitchers:createHomePitchers() },
+        game:null
+      };
+    }
+
+    function buildGame(){
+      const away = LEAGUE_TEAMS[(state.scheduleIndex % 5)+1];
+      const homeLineup = state.roster.hitters.slice(0,9);
+      const awayLineup = createAwayLineup();
+      const awayPitchers = createAwayPitchers();
+      return {
+        inning:1,
+        half:'top',
+        outs:0,
+        balls:0,
+        strikes:0,
+        home:'TOKYO BLUE STARS',
+        away,
+        homeScore:0,
+        awayScore:0,
+        offense:'away',
+        bases:[null,null,null],
+        inningRuns:{home:Array(9).fill('-'), away:Array(9).fill('-')},
+        batter:null,
+        pitcher:null,
+        pitchMode:'auto',
+        pitchType:'-',
+        selectedPitch:null,
+        pitchPlan:'-',
+        currentPitcherIndex:0,
+        currentAwayPitcherIndex:0,
+        currentHomeBatterIndex:0,
+        currentAwayBatterIndex:0,
+        homeLineup,
+        awayLineup,
+        awayPitchers,
+        pitcherStamina:state.roster.pitchers[0].stamina,
+        awayPitcherStamina:awayPitchers[0].stamina,
+        defense:Math.round(homeLineup.reduce((s,h)=>s+h.defense,0)/homeLineup.length)
+      };
+    }
+
+    let state = createState();
+
+    function readSlots(){
+      try{
+        const raw = localStorage.getItem(SAVE_KEY);
+        const data = raw ? JSON.parse(raw) : Array(5).fill(null);
+        return Array.isArray(data) && data.length === 5 ? data : Array(5).fill(null);
+      }catch{
+        return Array(5).fill(null);
+      }
+    }
+
+    function writeSlots(slots){
+      localStorage.setItem(SAVE_KEY, JSON.stringify(slots));
+    }
+
+    function addLog(text,type=''){
+      state.logs.unshift({text,type});
+      state.logs = state.logs.slice(0,300);
+      renderLog();
+    }
+
+    function currentHomePitcher(){ return state.roster.pitchers[state.game.currentPitcherIndex]; }
+    function currentAwayPitcher(){ return state.game.awayPitchers[state.game.currentAwayPitcherIndex]; }
+    function currentDefensivePitcher(){ return state.game.offense === 'away' ? currentHomePitcher() : currentAwayPitcher(); }
+    function currentOffenseBatter(){ return state.game.offense === 'away' ? state.game.awayLineup[state.game.currentAwayBatterIndex] : state.game.homeLineup[state.game.currentHomeBatterIndex]; }
+    function currentPitchList(){ return currentDefensivePitcher().pitches; }
+    function chooseAutoPitch(){ const list = currentPitchList(); return list[randi(0,list.length-1)]; }
+    function getCurrentPitcherStamina(){ return state.game.offense === 'away' ? state.game.pitcherStamina : state.game.awayPitcherStamina; }
+
+    function usePitcherStamina(amount){
+      if(state.game.offense === 'away'){
+        state.game.pitcherStamina = Math.max(0, state.game.pitcherStamina - amount);
+      }else{
+        state.game.awayPitcherStamina = Math.max(0, state.game.awayPitcherStamina - amount);
+      }
+    }
+
+    function setCurrentDisplayedNames(){
+      if(!state.game) return;
+      state.game.batter = currentOffenseBatter().name;
+      state.game.pitcher = currentDefensivePitcher().name;
+    }
+
+    function clearCount(){
+      state.game.balls = 0;
+      state.game.strikes = 0;
+    }
+
+    function markInningIfNeeded(){
+      const g = state.game;
+      const idx = g.inning - 1;
+      if(g.inningRuns.home[idx] === '-') g.inningRuns.home[idx] = 0;
+      if(g.inningRuns.away[idx] === '-') g.inningRuns.away[idx] = 0;
+    }
+
+    function addRun(side,runs=1){
+      const g = state.game;
+      markInningIfNeeded();
+      if(side === 'home'){
+        g.homeScore += runs;
+        g.inningRuns.home[g.inning-1] = Number(g.inningRuns.home[g.inning-1]) + runs;
+      }else{
+        g.awayScore += runs;
+        g.inningRuns.away[g.inning-1] = Number(g.inningRuns.away[g.inning-1]) + runs;
+      }
+    }
+
+    function getBaseText(){
+      const g = state.game;
+      const tags = [];
+      if(g.bases[0]) tags.push('1塁');
+      if(g.bases[1]) tags.push('2塁');
+      if(g.bases[2]) tags.push('3塁');
+      return tags.length ? tags.join(' / ') : '走者なし';
+    }
+
+    function forceWalkAdvance(side){
+      const g = state.game;
+      const forcedRun = g.bases[0] && g.bases[1] && g.bases[2];
+      const first = g.bases[0];
+      const second = g.bases[1];
+      const third = g.bases[2];
+      g.bases[2] = third || second || null;
+      g.bases[1] = second || first || null;
+      g.bases[0] = {name:'Runner',speed:50};
+      if(forcedRun) addRun(side,1);
+      return forcedRun;
+    }
+
+    function advanceOnHit(kind, side, batterObj){
+      const g = state.game;
+      let runs = 0;
+      const first = g.bases[0];
+      const second = g.bases[1];
+      const third = g.bases[2];
+
+      if(kind === 'single'){
+        if(third) runs++;
+        let newThird = null;
+        let newSecond = null;
+        if(second){
+          if(chance(72)) runs++;
+          else newThird = second;
+        }
+        if(first) newSecond = first;
+        g.bases[2] = newThird;
+        g.bases[1] = newSecond;
+        g.bases[0] = batterObj;
+      }
+      else if(kind === 'double'){
+        if(third) runs++;
+        if(second) runs++;
+        let newThird = null;
+        if(first){
+          if(chance(58)) runs++;
+          else newThird = first;
+        }
+        g.bases[2] = newThird;
+        g.bases[1] = batterObj;
+        g.bases[0] = null;
+      }
+      else if(kind === 'triple'){
+        if(third) runs++;
+        if(second) runs++;
+        if(first) runs++;
+        g.bases[2] = batterObj;
+        g.bases[1] = null;
+        g.bases[0] = null;
+      }
+      else if(kind === 'hr'){
+        if(third) runs++;
+        if(second) runs++;
+        if(first) runs++;
+        runs++;
+        g.bases = [null,null,null];
+      }
+
+      if(runs > 0) addRun(side,runs);
+      return runs;
+    }
+
+    function getDoublePlayType(){
+      const g = state.game;
+      if(!g.bases[0] || g.outs >= 2) return null;
+      const isBasesLoaded = !!g.bases[0] && !!g.bases[1] && !!g.bases[2];
+      if(isBasesLoaded && g.outs <= 1 && chance(6)) return 'home';
+      if(chance(20)) return 'standard';
+      return null;
+    }
+
+    function maybeAutoStealForAway(){
+      const g = state.game;
+      if(g.offense !== 'away') return false;
+      if(g.bases[0] && !g.bases[1] && chance(18)){
+        g.bases[1] = g.bases[0];
+        g.bases[0] = null;
+        addLog('相手走者が自動盗塁。二塁成功。','bad');
+        return true;
+      }
+      return false;
+    }
+
+    function creditPitchingOuts(n){ currentHomePitcher().stats.outs += n; }
+    function creditPitchWalk(){ currentHomePitcher().stats.bb += 1; }
+    function creditPitchStrikeout(){ currentHomePitcher().stats.so += 1; }
+    function creditPitchHit(kind){ currentHomePitcher().stats.h += 1; if(kind === 'hr') currentHomePitcher().stats.hr += 1; }
+    function creditPitchRuns(runs){ currentHomePitcher().stats.er += runs; }
+
+    function advanceAwayBatter(){
+      state.game.currentAwayBatterIndex = (state.game.currentAwayBatterIndex + 1) % state.game.awayLineup.length;
+      setCurrentDisplayedNames();
+    }
+
+    function advanceHomeBatter(){
+      state.game.currentHomeBatterIndex = (state.game.currentHomeBatterIndex + 1) % state.game.homeLineup.length;
+      setCurrentDisplayedNames();
+    }
+
+    function nextHalf(){
+      const g = state.game;
+      markInningIfNeeded();
+
+      if(g.half === 'top'){
+        g.half = 'bottom';
+        g.offense = 'home';
+        g.outs = 0;
+        clearCount();
+        g.bases = [null,null,null];
+        g.pitchType = '-';
+        g.selectedPitch = null;
+        g.pitchPlan = '-';
+        setCurrentDisplayedNames();
+        setNarration('攻撃采配',`こちらの攻撃です。${g.batter} が打席へ。`);
+        showOffenseActions();
+      } else {
+        if(g.inning >= 9){
+          finishGame();
+          return;
+        }
+        g.inning++;
+        g.half = 'top';
+        g.offense = 'away';
+        g.outs = 0;
+        clearCount();
+        g.bases = [null,null,null];
+        g.pitchType = '-';
+        g.selectedPitch = null;
+        g.pitchPlan = '-';
+        setCurrentDisplayedNames();
+        setNarration('守備采配',`相手打者は ${g.batter}。`);
+        showDefenseActions();
+      }
+      renderAll();
+    }
+
+    function renderStandings(){
+      els.standingsBox.innerHTML = '';
+      const sorted = [...state.standings].sort((a,b)=>b.w-a.w || a.l-b.l);
+      sorted.forEach((t,i)=>{
+        const row = document.createElement('div');
+        row.className = 'row';
+        row.innerHTML = `<span>${i+1}. ${t.name}</span><strong>${t.w}-${t.l}</strong>`;
+        els.standingsBox.appendChild(row);
+      });
+    }
+
+    function renderSaves(){
+      const slots = readSlots();
+      els.saveSlots.innerHTML = '';
+      for(let i=0;i<5;i++){
+        const s = slots[i];
+        const div = document.createElement('div');
+        div.className = 'save-slot';
+        div.innerHTML = `<div class="player-name">スロット ${i+1}</div><div class="tiny">${s ? `${s.time}<br>${s.record.w}勝${s.record.l}敗` : '未使用'}</div>`;
+        const row = document.createElement('div');
+        row.className = 'slot-actions';
+
+        const b1 = document.createElement('button');
+        b1.className = 'green';
+        b1.textContent = '保存';
+        b1.onclick = ()=>saveGame(i);
+
+        const b2 = document.createElement('button');
+        b2.className = 'secondary';
+        b2.textContent = '読込';
+        b2.disabled = !s;
+        b2.onclick = ()=>loadGame(i);
+
+        const b3 = document.createElement('button');
+        b3.className = 'red';
+        b3.textContent = '削除';
+        b3.disabled = !s;
+        b3.onclick = ()=>deleteGame(i);
+
+        row.append(b1,b2,b3);
+        div.appendChild(row);
+        els.saveSlots.appendChild(div);
+      }
+    }
+
+    function renderCount(){
+      const g = state.game || {balls:0,strikes:0,outs:0};
+      [els.b1,els.b2,els.b3,els.b4].forEach((el,i)=>el.classList.toggle('on', i < g.balls));
+      [els.s1,els.s2,els.s3].forEach((el,i)=>el.classList.toggle('on', i < g.strikes));
+      [els.o1,els.o2,els.o3].forEach((el,i)=>el.classList.toggle('on', i < g.outs));
+    }
+
+    function renderBases(){
+      const b = state.game ? state.game.bases : [null,null,null];
+      els.base1.classList.toggle('active', !!b[0]);
+      els.base2.classList.toggle('active', !!b[1]);
+      els.base3.classList.toggle('active', !!b[2]);
+    }
+
+    function renderBoard(){
+      const g = state.game;
+      els.scoreLabel.textContent = g ? `${g.home} vs ${g.away}` : 'TOKYO BLUE STARS 監督室';
+      els.phasePill.textContent = state.mode.toUpperCase();
+      els.modePill.textContent = g ? (g.pitchMode === 'auto' ? 'AUTO' : 'MANUAL') : 'AUTO';
+      els.pitchTypePill.textContent = g ? (g.pitchType || '-') : '-';
+      els.inningPill.textContent = g ? `${g.inning}回${g.half === 'top' ? '表' : '裏'}` : '-';
+      els.homeScore.textContent = g ? g.homeScore : '0';
+      els.awayScore.textContent = g ? g.awayScore : '0';
+      els.offenseTeam.textContent = g ? (g.offense === 'home' ? g.home : g.away) : '-';
+      els.batterName.textContent = g ? g.batter : '-';
+      els.pitcherName.textContent = g ? g.pitcher : '-';
+      els.countText.textContent = g ? `${g.balls}-${g.strikes} / ${g.outs}アウト` : '-';
+      els.defenseHint.textContent = g ? `守備平均 ${g.defense}` : '-';
+      els.pitcherStaminaHint.textContent = g ? `${getCurrentPitcherStamina()}%` : '-';
+      els.batterChip.textContent = g ? `打者 ${g.batter}` : '打者 -';
+      els.pitcherChip.textContent = g ? `投手 ${g.pitcher}` : '投手 -';
+      els.baseChip.textContent = g ? getBaseText() : '走者なし';
+      els.pitchPlanHint.textContent = g ? `打球 ${g.pitchPlan || '-'}` : '打球 -';
+
+      renderCount();
+      renderBases();
+
+      els.inningBoard.innerHTML = '';
+      for(let i=0;i<9;i++){
+        const cell = document.createElement('div');
+        cell.className = 'inning-cell';
+        const away = g ? g.inningRuns.away[i] : '-';
+        const home = g ? g.inningRuns.home[i] : '-';
+        cell.innerHTML = `<div>${i+1}</div><div class="tiny">${away}/${home}</div>`;
+        els.inningBoard.appendChild(cell);
+      }
+    }
+
+    function renderLog(){
+      els.logBox.innerHTML = '';
+      state.logs.forEach(l=>{
+        const d = document.createElement('div');
+        d.className = `log-line ${l.type}`.trim();
+        d.textContent = l.text;
+        els.logBox.appendChild(d);
+      });
+    }
+
+    function renderBench(){
+      els.benchBox.innerHTML = '';
+      if(!state.game){
+        els.benchBox.innerHTML = '<div class="tiny">試合が始まると、打率・本塁打・打点・防御率などがここに表示されます。</div>';
+        return;
+      }
+
+      const bt = document.createElement('div');
+      bt.className = 'player-card';
+      bt.innerHTML = '<div class="player-name">野手成績</div>';
+      els.benchBox.appendChild(bt);
+
+      state.game.homeLineup.forEach((h,i)=>{
+        const s = h.stats;
+        const d = document.createElement('div');
+        d.className = 'player-card';
+        d.innerHTML = `<div class="player-name">${i+1}. ${h.name} ${h.pos}</div>
+          <div class="tiny">AVG ${batAvg(s)} / AB ${s.ab} / H ${s.h} / HR ${s.hr} / RBI ${s.rbi} / BB ${s.bb} / SO ${s.so} / SB ${s.sb}</div>`;
+        els.benchBox.appendChild(d);
+      });
+
+      const pt = document.createElement('div');
+      pt.className = 'player-card';
+      pt.innerHTML = '<div class="player-name">投手成績</div>';
+      els.benchBox.appendChild(pt);
+
+      state.roster.pitchers.forEach((p,i)=>{
+        const s = p.stats;
+        const d = document.createElement('div');
+        d.className = 'player-card';
+        const current = i === state.game.currentPitcherIndex ? ' ← 登板中' : '';
+        d.innerHTML = `<div class="player-name">${p.name} ${p.role}${current}</div>
+          <div class="tiny">ERA ${era(s)} / W ${s.w} / L ${s.l} / SO ${s.so} / BB ${s.bb} / H ${s.h} / HR ${s.hr}</div>`;
+        els.benchBox.appendChild(d);
+      });
+    }
+
+    function setNarration(head,text){
+      els.headline.textContent = head;
+      els.narration.textContent = text;
+    }
+
+    function setActions(primary=[],secondary=[]){
+      els.primaryActions.innerHTML = '';
+      els.secondaryActions.innerHTML = '';
+      primary.forEach(a=>{
+        const b = document.createElement('button');
+        b.textContent = a.label;
+        b.className = a.className || '';
+        b.onclick = a.onClick;
+        b.disabled = !!a.disabled;
+        els.primaryActions.appendChild(b);
+      });
+      secondary.forEach(a=>{
+        const b = document.createElement('button');
+        b.textContent = a.label;
+        b.className = a.className || 'secondary';
+        b.onclick = a.onClick;
+        b.disabled = !!a.disabled;
+        els.secondaryActions.appendChild(b);
+      });
+    }
+
+    function renderAll(){
+      renderStandings();
+      renderSaves();
+      renderBoard();
+      renderLog();
+      renderBench();
+    }
+
+    function showTitle(){
+      state.mode = 'title';
+      state.game = null;
+      setNarration('監督室','青いユニフォームが並ぶロッカールーム。今日から、あなたがこのチームの監督です。選手を選び、サインを出し、ペナントレースを勝ち抜いて日本一を目指してください。');
+      setActions(
+        [
+          {label:'新シーズン開始',className:'gold',onClick:startSeason},
+          {label:'ロード案内',className:'secondary',onClick:()=>setNarration('ロード案内','左の SAVE / LOAD から読込できます。')}
+        ],
+        [
+          {label:'スタメン確認',onClick:()=>setNarration('スタメン確認','1. 青山 CF\n2. 立石 2B\n3. 黒川 RF\n4. 尾崎 1B\n5. 真鍋 LF\n6. 市原 3B\n7. 坂東 SS\n8. 広瀬 C\n9. 西岡 DH')}
+        ]
+      );
+      renderAll();
+    }
+
+    function startSeason(){
+      state.mode = 'pregame';
+      state.scheduleIndex = 0;
+      state.record = {w:0,l:0};
+      state.standings = LEAGUE_TEAMS.map(name => ({name,w:0,l:0}));
+      state.logs = [{text:'新しいシーズンが始まった。',type:'em'}];
+      state.roster = { hitters:createHomeHitters(), pitchers:createHomePitchers() };
+      state.game = buildGame();
+      setCurrentDisplayedNames();
+      setNarration('試合前ミーティング',`第1戦。相手は ${state.game.away}。\n今日の先発は ${state.game.pitcher}。`);
+      setActions(
+        [
+          {label:'プレイボール',className:'gold',onClick:startGame},
+          {label:'保存する',className:'green',onClick:promptSave}
+        ],
+        [
+          {label:'タイトルへ戻る',onClick:showTitle}
+        ]
+      );
+      renderAll();
+    }
+
+    function startGame(){
+      state.mode = 'manager';
+      state.game.offense = 'away';
+      setCurrentDisplayedNames();
+      setNarration('守備采配',`相手打者は ${state.game.batter}。\n投球モードを AUTO と MANUAL で切り替えられます。`);
+      showDefenseActions();
+      renderAll();
+    }
+
+    function showDefenseActions(){
+      setActions(
+        [
+          {label:'勝負',className:'gold',onClick:()=>resolvePitch('attack')},
+          {label:'一球外す',className:'orange',onClick:()=>resolvePitch('waste')},
+          {label:'申告敬遠',className:'purple',onClick:()=>resolvePitch('ibb')},
+          {label:'牽制',className:'secondary',onClick:()=>resolvePitch('pickoff')}
+        ],
+        [
+          {label:'AUTO/指定切替',onClick:toggleMode},
+          {label:'球種指定',className:'purple',onClick:pickPitch,disabled:state.game.pitchMode!=='manual'},
+          {label:'継投',onClick:changePitcherMenu},
+          {label:'保存',className:'green',onClick:promptSave}
+        ]
+      );
+    }
+
+    function showOffenseActions(){
+      setActions(
+        [
+          {label:'打たせる',className:'gold',onClick:()=>resolveBat('normal')},
+          {label:'強振',className:'orange',onClick:()=>resolveBat('power')},
+          {label:'バント',className:'secondary',onClick:()=>resolveBat('bunt')},
+          {label:'一球見送り',className:'secondary',onClick:()=>resolveBat('take')}
+        ],
+        [
+          {label:'盗塁',className:'purple',onClick:stealAttempt},
+          {label:'次打者へ',onClick:forceAdvanceBatter},
+          {label:'保存',className:'green',onClick:promptSave},
+          {label:'タイトルへ戻る',onClick:showTitle}
+        ]
+      );
+    }
+
+    function toggleMode(){
+      state.game.pitchMode = state.game.pitchMode === 'auto' ? 'manual' : 'auto';
+      state.game.pitchType = '-';
+      state.game.selectedPitch = null;
+      addLog(`投球モードを ${state.game.pitchMode === 'auto' ? 'AUTO' : 'MANUAL'} に切り替えた。`,'special');
+      showDefenseActions();
+      renderAll();
+    }
+
+    function pickPitch(){
+      const pitches = currentPitchList();
+      setNarration('球種指定','次の一球を指定してください。');
+      setActions(
+        pitches.map(p=>({
+          label:p,
+          className:'purple',
+          onClick:()=>{
+            state.game.pitchType = p;
+            state.game.selectedPitch = p;
+            addLog(`次球を ${p} に指定。`,'special');
+            setNarration('守備采配',`相手打者は ${state.game.batter}。\n次球は ${p} です。`);
+            showDefenseActions();
+            renderAll();
+          }
+        })),
+        [{label:'戻る',onClick:()=>{ setNarration('守備采配',`相手打者は ${state.game.batter}。`); showDefenseActions(); renderAll(); }}]
+      );
+    }
+
+    function changePitcherMenu(){
+      setNarration('継投','投入する投手を選んでください。');
+      setActions(
+        state.roster.pitchers.map((p,i)=>({
+          label:`${p.name} ${p.role}`,
+          className:i === state.game.currentPitcherIndex ? 'secondary' : 'gold',
+          disabled:i === state.game.currentPitcherIndex,
+          onClick:()=>{
+            state.game.currentPitcherIndex = i;
+            state.game.pitcher = p.name;
+            state.game.pitcherStamina = p.stamina;
+            state.game.pitchType = '-';
+            state.game.selectedPitch = null;
+            addLog(`${p.name} がマウンドへ。`,'special');
+            setNarration('守備采配',`相手打者は ${state.game.batter}。\n投手は ${p.name} に代わりました。`);
+            showDefenseActions();
+            renderAll();
+          }
+        })),
+        [{label:'戻る',onClick:()=>{ setNarration('守備采配',`相手打者は ${state.game.batter}。`); showDefenseActions(); renderAll(); }}]
+      );
+    }
+
+    function resolvePitch(type){
+      const g = state.game;
+      const batter = g.awayLineup[g.currentAwayBatterIndex];
+      const pitcher = currentHomePitcher();
+      setCurrentDisplayedNames();
+
+      if(type === 'pickoff'){
+        g.pitchType = '牽制';
+        if(g.bases[0] && chance(14 + Math.max(0, pitcher.control - 60)/2)){
+          g.bases[0] = null;
+          g.outs++;
+          creditPitchingOuts(1);
+          addLog('一塁へ牽制。走者は戻れずアウト。','good');
+        } else {
+          addLog('一塁へ牽制。走者は戻った。','em');
+        }
+        if(g.outs >= 3) nextHalf();
+        renderAll();
+        return;
+      }
+
+      if(type === 'ibb'){
+        clearCount();
+        g.pitchType = '申告敬遠';
+        const forcedRun = forceWalkAdvance('away');
+        creditPitchWalk();
+        if(forcedRun){
+          creditPitchRuns(1);
+          addLog('申告敬遠。押し出しで1点。','bad');
+        } else {
+          addLog('申告敬遠で歩かせた。','special');
+        }
+        advanceAwayBatter();
+        setNarration('守備采配',`次の打者は ${g.batter}。`);
+        showDefenseActions();
+        renderAll();
+        return;
+      }
+
+      if(type === 'waste'){
+        g.pitchType = 'ボール球';
+        g.balls = Math.min(4, g.balls + 1);
+        usePitcherStamina(2);
+        addLog('一球外した。','em');
+        maybeAutoStealForAway();
+
+        if(g.balls >= 4){
+          const forcedRun = forceWalkAdvance('away');
+          clearCount();
+          creditPitchWalk();
+          if(forcedRun){
+            creditPitchRuns(1);
+            addLog('四球。押し出しで1点。','bad');
+          } else {
+            addLog('四球。走者を出した。','bad');
+          }
+          advanceAwayBatter();
+        }
+        renderAll();
+        return;
+      }
+
+      g.pitchType = (g.pitchMode === 'manual' && g.selectedPitch) ? g.selectedPitch : chooseAutoPitch();
+      usePitcherStamina(4);
+
+      const stuff = pitcher.stuff + Math.floor(g.pitcherStamina / 8);
+      const control = pitcher.control + Math.floor(g.pitcherStamina / 10);
+      const batterSkill = batter.contact + batter.power * 0.4;
+
+      maybeAutoStealForAway();
+
+      const roll = randi(1,100) + Math.floor((batterSkill - stuff) / 8);
+
+      if(roll <= 18 + Math.floor(control / 10)){
+        g.strikes = Math.min(3, g.strikes + 1);
+        addLog(`${g.pitchType}でストライク。`,'em');
+      } else if(roll <= 30){
+        g.balls = Math.min(4, g.balls + 1);
+        addLog(`${g.pitchType}はボール。`,'em');
+      } else {
+        const inplayRoll = randi(1,100) + Math.floor((batter.power - pitcher.stuff) / 5);
+
+        if(inplayRoll <= 28){
+          const dpType = getDoublePlayType();
+
+          if(dpType === 'home'){
+            g.outs += 2;
+            creditPitchingOuts(2);
+            clearCount();
+            g.bases[2] = g.bases[1];
+            g.bases[1] = g.bases[0];
+            g.bases[0] = null;
+            addLog('ゴロ。本塁封殺→一塁送球で併殺。','good');
+          }
+          else if(dpType === 'standard'){
+            g.outs += 2;
+            creditPitchingOuts(2);
+            clearCount();
+            g.bases[0] = null;
+            addLog('ゴロ。二塁封殺→一塁送球で併殺。','good');
+          }
+          else {
+            g.outs++;
+            creditPitchingOuts(1);
+            clearCount();
+            addLog('打たせてアウト。','good');
+          }
+          advanceAwayBatter();
+        }
+        else if(inplayRoll <= 48){
+          clearCount();
+          const runs = advanceOnHit('single','away',batter);
+          creditPitchHit('single');
+          creditPitchRuns(runs);
+          addLog(runs > 0 ? `ヒット。${runs}点入った。` : 'ヒット。','bad');
+          advanceAwayBatter();
+        }
+        else if(inplayRoll <= 61){
+          clearCount();
+          const runs = advanceOnHit('double','away',batter);
+          creditPitchHit('double');
+          creditPitchRuns(runs);
+          addLog(runs > 0 ? `二塁打。${runs}点入った。` : '二塁打。','bad');
+          advanceAwayBatter();
+        }
+        else if(inplayRoll <= 67){
+          clearCount();
+          const runs = advanceOnHit('triple','away',batter);
+          creditPitchHit('triple');
+          creditPitchRuns(runs);
+          addLog(runs > 0 ? `三塁打。${runs}点入った。` : '三塁打。','bad');
+          advanceAwayBatter();
+        }
+        else {
+          clearCount();
+          const runs = advanceOnHit('hr','away',batter);
+          creditPitchHit('hr');
+          creditPitchRuns(runs);
+          addLog(`ホームラン。${runs}点入った。`,'bad');
+          advanceAwayBatter();
+        }
+      }
+
+      if(g.strikes >= 3){
+        g.outs++;
+        creditPitchStrikeout();
+        creditPitchingOuts(1);
+        clearCount();
+        addLog('三振！','good');
+        advanceAwayBatter();
+      }
+
+      if(g.balls >= 4){
+        const forcedRun = forceWalkAdvance('away');
+        clearCount();
+        creditPitchWalk();
+        if(forcedRun){
+          creditPitchRuns(1);
+          addLog('四球。押し出しで1点。','bad');
+        } else {
+          addLog('四球。走者を出した。','bad');
+        }
+        advanceAwayBatter();
+      }
+
+      if(g.outs >= 3){
+        nextHalf();
+      } else {
+        setNarration('守備采配',`相手打者は ${g.batter}。`);
+        showDefenseActions();
+      }
+      renderAll();
+    }
+
+    function resolveBat(type){
+      const g = state.game;
+      const batter = g.homeLineup[g.currentHomeBatterIndex];
+      const pitcher = currentAwayPitcher();
+      setCurrentDisplayedNames();
+
+      const pitchType = pitcher.pitches[randi(0,pitcher.pitches.length-1)];
+      g.pitchType = pitchType;
+
+      const pitchDifficulty = pitcher.stuff + Math.floor(g.awayPitcherStamina / 8);
+      const batterBase = batter.contact + batter.power * 0.35 + batter.speed * 0.1;
+      g.awayPitcherStamina = Math.max(0, g.awayPitcherStamina - 3);
+
+      if(type === 'take'){
+        const takeRoll = randi(1,100) + Math.floor((pitcher.control - batter.contact) / 8);
+        if(takeRoll <= 45){
+          g.balls = Math.min(4, g.balls + 1);
+          addLog('見送ってボール。','good');
+        } else {
+          g.strikes = Math.min(3, g.strikes + 1);
+          addLog('見送ってストライク。','bad');
+        }
+      }
+      else if(type === 'bunt'){
+        const buntRoll = randi(1,100) + Math.floor((pitchDifficulty - batter.contact) / 8);
+        if(buntRoll <= 65){
+          clearCount();
+          g.outs++;
+          if(g.bases[2]){
+            addRun('home',1);
+            g.bases[2] = null;
+          }
+          if(g.bases[1]){
+            g.bases[2] = g.bases[1];
+            g.bases[1] = null;
+          }
+          if(g.bases[0]){
+            g.bases[1] = g.bases[0];
+            g.bases[0] = null;
+          }
+          batter.stats.ab += 1;
+          addLog('送りバント成功。','em');
+          advanceHomeBatter();
+        } else {
+          clearCount();
+          g.outs++;
+          batter.stats.ab += 1;
+          addLog('バント失敗。','bad');
+          advanceHomeBatter();
+        }
+      }
+      else {
+        const swingBonus = type === 'power' ? 8 : 0;
+        const contactRoll = randi(1,100) + Math.floor((pitchDifficulty - batterBase - swingBonus) / 7);
+
+        if(contactRoll <= 18){
+          g.strikes = Math.min(3, g.strikes + 1);
+          addLog('見逃しストライク。','bad');
+        }
+        else if(contactRoll <= 28){
+          g.balls = Math.min(4, g.balls + 1);
+          addLog('ボール。','em');
+        }
+        else {
+          const hitRoll = randi(1,100) + Math.floor((pitchDifficulty - (batter.contact + (type === 'power' ? batter.power : 0))) / 6);
+
+          if(hitRoll <= 26){
+            batter.stats.ab += 1;
+            const dpType = getDoublePlayType();
+
+            if(dpType === 'home'){
+              g.outs += 2;
+              clearCount();
+              g.bases[2] = g.bases[1];
+              g.bases[1] = g.bases[0];
+              g.bases[0] = null;
+              addLog('ゴロ。本塁封殺→一塁送球で併殺。','bad');
+            }
+            else if(dpType === 'standard'){
+              g.outs += 2;
+              clearCount();
+              g.bases[0] = null;
+              addLog('ゴロ。二塁封殺→一塁送球で併殺。','bad');
+            }
+            else {
+              g.outs++;
+              clearCount();
+              addLog(type === 'power' ? '強振したが凡退。' : '打たせたがアウト。','bad');
+            }
+            advanceHomeBatter();
+          }
+          else if(hitRoll <= 50){
+            batter.stats.ab += 1;
+            batter.stats.h += 1;
+            clearCount();
+            const runs = advanceOnHit('single','home',batter);
+            batter.stats.rbi += runs;
+            addLog(runs > 0 ? `クリーンヒット！ ${runs}点入った。` : 'クリーンヒット！','good');
+            advanceHomeBatter();
+          }
+          else if(hitRoll <= 67){
+            batter.stats.ab += 1;
+            batter.stats.h += 1;
+            batter.stats.d2 += 1;
+            clearCount();
+            const runs = advanceOnHit('double','home',batter);
+            batter.stats.rbi += runs;
+            addLog(runs > 0 ? `二塁打！ ${runs}点入った。` : '二塁打！','good');
+            advanceHomeBatter();
+          }
+          else if(hitRoll <= 74){
+            batter.stats.ab += 1;
+            batter.stats.h += 1;
+            batter.stats.d3 += 1;
+            clearCount();
+            const runs = advanceOnHit('triple','home',batter);
+            batter.stats.rbi += runs;
+            addLog(runs > 0 ? `三塁打！ ${runs}点入った。` : '三塁打！','good');
+            advanceHomeBatter();
+          }
+          else {
+            batter.stats.ab += 1;
+            batter.stats.h += 1;
+            batter.stats.hr += 1;
+            clearCount();
+            const runs = advanceOnHit('hr','home',batter);
+            batter.stats.rbi += runs;
+            addLog(`ホームラン！ ${runs}点入った。`,'good');
+            advanceHomeBatter();
+          }
+        }
+      }
+
+      if(g.strikes >= 3){
+        batter.stats.ab += 1;
+        batter.stats.so += 1;
+        g.outs++;
+        clearCount();
+        addLog('三振。','bad');
+        advanceHomeBatter();
+      }
+
+      if(g.balls >= 4){
+        const forcedRun = forceWalkAdvance('home');
+        batter.stats.bb += 1;
+        clearCount();
+        if(forcedRun){
+          batter.stats.rbi += 1;
+          addLog('四球を選んだ。押し出しで1点。','good');
+        } else {
+          addLog('四球を選んだ。','good');
+        }
+        advanceHomeBatter();
+      }
+
+      if(g.outs >= 3){
+        nextHalf();
+      } else {
+        setNarration('攻撃采配',`こちらの攻撃です。${g.batter} が打席へ。`);
+        showOffenseActions();
+      }
+      renderAll();
+    }
+
+    function stealAttempt(){
+      const g = state.game;
+      if(!g.bases[0] || g.bases[1]){
+        addLog('盗塁できる走者がいない。','bad');
+        renderAll();
+        return;
+      }
+      const runner = g.bases[0];
+      const speed = runner && runner.speed ? runner.speed : 55;
+      const success = chance(35 + Math.floor(speed / 2) - 20);
+
+      if(success){
+        if(runner && runner.stats) runner.stats.sb += 1;
+        g.bases[1] = g.bases[0];
+        g.bases[0] = null;
+        addLog('盗塁成功！二塁を奪った。','good');
+      } else {
+        g.bases[0] = null;
+        g.outs++;
+        addLog('盗塁失敗。刺された。','bad');
+        if(g.outs >= 3) nextHalf();
+      }
+      renderAll();
+    }
+
+    function forceAdvanceBatter(){
+      if(state.game.offense === 'home'){
+        advanceHomeBatter();
+        setNarration('攻撃采配',`こちらの攻撃です。${state.game.batter} が打席へ。`);
+        showOffenseActions();
+      }
+      renderAll();
+    }
+
+    function finishGame(){
+      const g = state.game;
+      state.mode = 'postgame';
+      const win = g.homeScore >= g.awayScore;
+      const my = state.standings.find(t=>t.name==='TOKYO BLUE STARS');
+      const opp = state.standings.find(t=>t.name===g.away);
+
+      if(win){
+        state.record.w++;
+        if(my) my.w++;
+        if(opp) opp.l++;
+        currentHomePitcher().stats.w += 1;
+        addLog(`試合終了！ ${g.home} が ${g.homeScore}-${g.awayScore} で勝利。`,'good');
+      } else {
+        state.record.l++;
+        if(my) my.l++;
+        if(opp) opp.w++;
+        currentHomePitcher().stats.l += 1;
+        addLog(`試合終了。${g.away} に ${g.homeScore}-${g.awayScore} で敗れた。`,'bad');
+      }
+
+      setNarration('試合終了',`現在の成績は ${state.record.w}勝${state.record.l}敗。\n併殺ロジックは通常併殺中心、本塁併殺はレアケースに調整済みです。`);
+      setActions(
+        [
+          {label:'次の試合へ',className:'gold',onClick:nextGame},
+          {label:'保存する',className:'green',onClick:promptSave}
+        ],
+        [
+          {label:'タイトルへ戻る',onClick:showTitle}
+        ]
+      );
+      renderAll();
+    }
+
+    function nextGame(){
+      state.scheduleIndex++;
+      if(state.scheduleIndex >= state.seasonLen){
+        state.mode = 'ending';
+        setNarration('シーズン終了',`全日程終了。\n最終成績は ${state.record.w}勝${state.record.l}敗。`);
+        setActions(
+          [
+            {label:'タイトルへ戻る',className:'gold',onClick:showTitle},
+            {label:'保存する',className:'green',onClick:promptSave}
+          ],
+          []
+        );
+        renderAll();
+        return;
+      }
+
+      state.game = buildGame();
+      setCurrentDisplayedNames();
+      state.mode = 'pregame';
+      setNarration('試合前ミーティング',`第${state.scheduleIndex+1}戦。相手は ${state.game.away}。\n先発は ${state.game.pitcher}。`);
+      setActions(
+        [
+          {label:'プレイボール',className:'gold',onClick:startGame},
+          {label:'保存する',className:'green',onClick:promptSave}
+        ],
+        [
+          {label:'タイトルへ戻る',onClick:showTitle}
+        ]
+      );
+      renderAll();
+    }
+
+    function saveGame(slot){
+      const slots = readSlots();
+      slots[slot] = {
+        time:new Date().toLocaleString('ja-JP'),
+        state:clone(state),
+        record:clone(state.record)
+      };
+      writeSlots(slots);
+      addLog(`スロット ${slot+1} に保存しました。`,'good');
+      renderSaves();
+    }
+
+    function promptSave(){
+      setNarration('セーブ','保存先を選んでください。');
+      setActions(
+        Array.from({length:5},(_,i)=>({
+          label:`スロット ${i+1}`,
+          className:'green',
+          onClick:()=>{ saveGame(i); restoreView(); }
+        })),
+        [{label:'戻る',onClick:restoreView}]
+      );
+    }
+
+    function loadGame(slot){
+      const slots = readSlots();
+      if(!slots[slot]) return;
+      state = clone(slots[slot].state);
+      addLog(`スロット ${slot+1} を読み込みました。`,'good');
+      restoreView();
+    }
+
+    function deleteGame(slot){
+      const slots = readSlots();
+      slots[slot] = null;
+      writeSlots(slots);
+      renderSaves();
+      addLog(`スロット ${slot+1} を削除しました。`,'em');
+    }
+
+    function restoreView(){
+      if(state.mode === 'title'){
+        showTitle();
+        return;
+      }
+      if(state.mode === 'pregame'){
+        setCurrentDisplayedNames();
+        setNarration('試合前ミーティング',`第${state.scheduleIndex+1}戦。相手は ${state.game.away}。\n先発は ${state.game.pitcher}。`);
+        setActions(
+          [
+            {label:'プレイボール',className:'gold',onClick:startGame},
+            {label:'保存する',className:'green',onClick:promptSave}
+          ],
+          [
+            {label:'タイトルへ戻る',onClick:showTitle}
+          ]
+        );
+        renderAll();
+        return;
+      }
+      if(state.mode === 'manager'){
+        setCurrentDisplayedNames();
+        if(state.game.offense === 'home'){
+          setNarration('攻撃采配',`こちらの攻撃です。${state.game.batter} が打席へ。`);
+          showOffenseActions();
+        } else {
+          setNarration('守備采配',`相手打者は ${state.game.batter}。`);
+          showDefenseActions();
+        }
+        renderAll();
+        return;
+      }
+      if(state.mode === 'postgame'){
+        finishGame();
+        return;
+      }
+      if(state.mode === 'ending'){
+        setNarration('シーズン終了',`全日程終了。\n最終成績は ${state.record.w}勝${state.record.l}敗。`);
+        setActions(
+          [
+            {label:'タイトルへ戻る',className:'gold',onClick:showTitle},
+            {label:'保存する',className:'green',onClick:promptSave}
+          ],
+          []
+        );
+        renderAll();
+        return;
+      }
+      renderAll();
+    }
+
+    showTitle();
+    renderAll();
+  })();
+  </script>
+</body>
+</html>

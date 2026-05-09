@@ -1,1287 +1,806 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Loto6 統計分析・研究シミュレーター</title>
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Phosphor Icons -->
-  <script src="https://unpkg.com/@phosphor-icons/web"></script>
-  <!-- React & ReactDOM -->
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <!-- Babel -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loto6 リアルデータ対応シミュレーター v6.2 iPad ResetFix</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--txt:#1f2937;--muted:#6b7280;--line:#e5e7eb;--brand:#2563eb;--brand2:#1e40af;--danger:#dc2626;--ok:#16a34a;--warn:#ca8a04}
+body[data-theme="dark"]{--bg:#0f172a;--card:#111827;--txt:#e5e7eb;--muted:#9ca3af;--line:#374151;--brand:#60a5fa;--brand2:#93c5fd;--danger:#f87171;--ok:#4ade80;--warn:#facc15}
+@media (prefers-color-scheme: dark){body[data-theme="system"]{--bg:#0f172a;--card:#111827;--txt:#e5e7eb;--muted:#9ca3af;--line:#374151;--brand:#60a5fa;--brand2:#93c5fd;--danger:#f87171;--ok:#4ade80;--warn:#facc15}}
 
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            brand: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 900: '#1e3a8a' }
-          }
-        }
-      }
-    }
-  </script>
-  <style>
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-    .dark ::-webkit-scrollbar-thumb { background: #475569; }
-    body { font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif; }
-    .hide-scrollbar::-webkit-scrollbar { display: none; }
-    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-  </style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,"Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;background:var(--bg);color:var(--txt)}
+header{background:linear-gradient(135deg,var(--brand),#4f46e5);color:#fff;padding:20px 24px}.wrap{max-width:1180px;margin:0 auto}h1{margin:0;font-size:24px}header p{margin:6px 0 0;color:#dbeafe}
+.layout{display:flex;gap:18px;padding:20px}.side{width:240px;flex:0 0 240px}.main{flex:1;min-width:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 2px 8px rgba(15,23,42,.04);padding:18px;margin-bottom:16px}
+.nav button{display:block;width:100%;border:0;background:var(--card);padding:14px 16px;margin-bottom:8px;border-radius:12px;text-align:left;font-weight:700;color:var(--txt);cursor:pointer;border:1px solid var(--line)}
+.nav button.active{background:color-mix(in srgb,var(--brand) 14%,var(--card));color:var(--brand);border-color:var(--brand)}
+.grid{display:grid;gap:14px}.g4{grid-template-columns:repeat(4,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:repeat(2,1fr)}
+.kpi .v{font-size:26px;font-weight:800}.muted{color:var(--muted);font-size:13px}.small{font-size:12px}.warnbox{border-left:5px solid #facc15;background:color-mix(in srgb,#facc15 14%,var(--card));color:var(--txt)}.okbox{border-left:5px solid #22c55e;background:color-mix(in srgb,#22c55e 14%,var(--card))}.badbox{border-left:5px solid #ef4444;background:color-mix(in srgb,#ef4444 14%,var(--card))}
+button.primary,a.btn{background:var(--brand);color:#fff;border:0;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer;text-decoration:none;display:inline-block}
+button.secondary,a.secondary{background:var(--card);color:var(--brand);border:1px solid var(--brand);border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer;text-decoration:none;display:inline-block}
+button.danger{background:var(--card);color:var(--danger);border:1px solid var(--danger);border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer}
+input,select,textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--card);color:var(--txt)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.row>*{margin:2px 0}.ball{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;font-weight:800;margin:2px;color:#111;border:2px solid rgba(0,0,0,.08)}
+.b1{background:#facc15}.b2{background:#3b82f6;color:#fff}.b3{background:#ef4444;color:#fff}.b4{background:#22c55e;color:#fff}.b5{background:#a855f7;color:#fff}.bb{background:color-mix(in srgb,var(--bg) 80%,var(--card));color:var(--txt)}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left}th{background:color-mix(in srgb,var(--bg) 85%,var(--card));color:var(--txt)}
+.bar{height:14px;background:var(--line);border-radius:999px;overflow:hidden}.bar span{display:block;height:100%;background:var(--brand)}
+.tab{display:none}.tab.active{display:block}.heat{display:grid;grid-template-columns:repeat(11,1fr);gap:8px}.heat .cell{border-radius:10px;text-align:center;padding:8px 4px;border:1px solid var(--line);font-weight:800}.actions{display:flex;gap:8px;flex-wrap:wrap}.candidate{display:flex;justify-content:space-between;gap:12px;align-items:center;border:1px solid var(--line);background:color-mix(in srgb,var(--bg) 70%,var(--card));border-radius:12px;padding:12px;margin:10px 0}.candidate .candActions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mini{font-size:12px;padding:7px 9px!important;border-radius:8px!important}.textareaHint{margin-top:6px;color:var(--muted);font-size:12px}
+footer{color:#6b7280;font-size:12px;text-align:center;padding:20px}
+@media(max-width:840px){.layout{display:block;padding:12px}.side{width:auto;flex:auto}.nav{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.nav button{margin:0}.g4,.g3,.g2{grid-template-columns:1fr}.heat{grid-template-columns:repeat(7,1fr)}}
+</style>
 </head>
-<body class="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-200">
-  <div id="root"></div>
+<body>
+<header><div class="wrap"><h1>Loto6 リアルデータ対応シミュレーター v6.2 iPad ResetFix</h1><p>候補生成→バックテスト連携、JSON SAVE/LOAD、リセット、テーマ切替対応。CDNなし・Reactなしの安定版です。iPad向けに全リセット動作を強化しました。</p></div></header>
+<div class="wrap layout">
+<aside class="side">
+  <div class="card nav">
+    <button data-tab="dashboard" class="active">ダッシュボード</button>
+    <button data-tab="analysis">データ分析</button>
+    <button data-tab="generator">候補生成</button>
+    <button data-tab="sim">バックテスト</button>
+    <button data-tab="settings">CSV取込・設定</button>
+  </div>
+  <div class="card small muted">研究支援用ツールです。当せんを保証するものではありません。</div>
+</aside>
+<main class="main">
+  <div class="card warnbox"><b>重要：</b> 宝くじの結果はランダムです。過去データの傾向は将来の当せんを保証しません。第三者CSVを使う場合は公式発表との突き合わせを推奨します。</div>
 
-  <script type="text/babel">
-    const { useState, useEffect, useMemo, useCallback } = React;
-
-    // --- Utility Functions ---
-
-    // LocalStorage Hook
-    function useLocalStorage(key, initialValue) {
-      const [storedValue, setStoredValue] = useState(() => {
-        try {
-          const item = window.localStorage.getItem(key);
-          return item ? JSON.parse(item) : initialValue;
-        } catch (error) {
-          console.error(error);
-          return initialValue;
-        }
-      });
-
-      const setValue = value => {
-        try {
-          const valueToStore = value instanceof Function ? value(storedValue) : value;
-          setStoredValue(valueToStore);
-          window.localStorage.setItem(key, JSON.stringify(valueToStore));
-        } catch (error) {
-          console.error(error);
-        }
-      };
-      return [storedValue, setValue];
-    }
-
-    // Format Currency
-    const fmtC = (num) => new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(num || 0);
-    const fmtN = (num) => new Intl.NumberFormat('ja-JP').format(num || 0);
-
-    // Ball Colors logic
-    const getBallColor = (num) => {
-      if (num <= 10) return 'bg-yellow-400 text-yellow-900 border-yellow-500';
-      if (num <= 20) return 'bg-blue-500 text-white border-blue-600';
-      if (num <= 30) return 'bg-red-500 text-white border-red-600';
-      if (num <= 40) return 'bg-green-500 text-white border-green-600';
-      return 'bg-purple-500 text-white border-purple-600';
-    };
-
-    // Calculate Combinations (nCr) - simple recursive
-    const nCr = (n, r) => {
-      if (r === 0 || n === r) return 1;
-      if (r > n) return 0;
-      let res = 1;
-      for (let i = 1; i <= r; i++) {
-        res = res * (n - i + 1) / i;
-      }
-      return res;
-    };
-
-    // Check Win Result
-    const checkWin = (purchasedNumbers, resultNumbers, bonusNumber) => {
-      const matchCount = purchasedNumbers.filter(n => resultNumbers.includes(n)).length;
-      const hasBonus = purchasedNumbers.includes(bonusNumber);
-      
-      if (matchCount === 6) return 1;
-      if (matchCount === 5 && hasBonus) return 2;
-      if (matchCount === 5) return 3;
-      if (matchCount === 4) return 4;
-      if (matchCount === 3) return 5;
-      return 0; // Loss
-    };
-
-    // Generate Mock Data
-    const generateMockData = (count = 1000) => {
-      const data = [];
-      let currentDate = new Date();
-      currentDate.setDate(currentDate.getDate() - (count * 7)); // approx past weeks
-
-      for (let i = 1; i <= count; i++) {
-        const pool = Array.from({length: 43}, (_, i) => i + 1);
-        const nums = [];
-        for(let j=0; j<6; j++) {
-          const idx = Math.floor(Math.random() * pool.length);
-          nums.push(pool.splice(idx, 1)[0]);
-        }
-        nums.sort((a,b) => a - b);
-        const bonus = pool[Math.floor(Math.random() * pool.length)];
-
-        // Mock prize amounts
-        const prizes = {
-          1: { winners: Math.floor(Math.random() * 3), amount: 200000000 },
-          2: { winners: Math.floor(Math.random() * 10) + 1, amount: 15000000 },
-          3: { winners: Math.floor(Math.random() * 200) + 50, amount: 300000 },
-          4: { winners: Math.floor(Math.random() * 5000) + 1000, amount: 6800 },
-          5: { winners: Math.floor(Math.random() * 50000) + 10000, amount: 1000 },
-        };
-        if(prizes[1].winners === 0 && Math.random() > 0.5) prizes[1].amount = 0; // Carryover simulation
-
-        data.push({
-          id: i,
-          date: currentDate.toISOString().split('T')[0],
-          numbers: nums,
-          bonus: bonus,
-          sales: Math.floor(Math.random() * 1500000000) + 1000000000,
-          prizes: prizes,
-          carryover: prizes[1].winners === 0 ? Math.floor(Math.random() * 500000000) : 0
-        });
-        currentDate.setDate(currentDate.getDate() + 7);
-      }
-      return data.sort((a,b) => b.id - a.id); // Descending (latest first)
-    };
-
-    // --- Components ---
-
-    const AlertBanner = () => (
-      <div className="bg-yellow-50 dark:bg-yellow-900/30 border-l-4 border-yellow-400 p-4 mb-6 rounded shadow-sm">
-        <div className="flex">
-          <div className="flex-shrink-0">
-            <i className="ph ph-warning text-yellow-500 text-xl"></i>
-          </div>
-          <div className="ml-3">
-            <p className="text-sm text-yellow-800 dark:text-yellow-200 font-medium">
-              【重要】本ツールは過去のデータに基づく統計・研究支援アプリです。<br className="hidden sm:block" />
-              特定のパターンの出現を保証するものではありません。宝くじの購入は自己責任で、無理のない予算（余裕資金）の範囲でお楽しみください。
-            </p>
-          </div>
+  <section id="dashboard" class="tab active">
+    <div class="card">
+      <div class="row">
+        <h2 style="margin-right:auto">ダッシュボード</h2>
+        <div style="min-width:210px">
+          <label>表示テーマ</label>
+          <select id="dashTheme">
+            <option value="system">システムデフォルト</option>
+            <option value="dark">ダーク</option>
+            <option value="light">ライト</option>
+          </select>
         </div>
+        <button type="button" class="secondary" id="resetViewBtn">画面リセット</button>
+        <button type="button" class="danger" id="resetAllBtn">全リセット</button>
+        <button type="button" class="danger" id="forceSampleBtn">サンプルへ強制復帰</button>
       </div>
-    );
+      <p class="muted">画面リセットは、候補・バックテスト入力などの作業欄だけを初期化します。全リセットは、読み込んだCSVやSAVE状態も含めて初期状態に戻します。</p>
+    </div>
+    <div class="grid g4 kpi">
+      <div class="card"><div class="muted">データ件数</div><div class="v" id="kTotal">-</div></div>
+      <div class="card"><div class="muted">平均合計値</div><div class="v" id="kAvg">-</div></div>
+      <div class="card"><div class="muted">奇偶比率</div><div class="v" id="kOddEven">-</div></div>
+      <div class="card"><div class="muted">データ種別</div><div class="v" id="kSource" style="font-size:18px">-</div></div>
+    </div>
+    <div class="card">
+      <h2>最新の抽せん結果</h2>
+      <div id="latestBox"></div>
+    </div>
+    <div class="card">
+      <h2>出現頻度ランキング</h2>
+      <div class="grid g2">
+        <div><h3>ホット数字 Top10</h3><div id="hotNums"></div></div>
+        <div><h3>コールド数字 Bottom10</h3><div id="coldNums"></div></div>
+      </div>
+    </div>
+  </section>
 
-    const Ball = ({ num, isBonus = false, size = "md" }) => {
-      const sizeClasses = {
-        sm: "w-6 h-6 text-xs border",
-        md: "w-8 h-8 text-sm border-2",
-        lg: "w-10 h-10 text-base border-2"
-      };
-      const colors = isBonus ? 'bg-gray-100 text-gray-800 border-gray-400 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-500' : getBallColor(num);
-      return (
-        <div className={`rounded-full flex items-center justify-center font-bold shadow-sm ${sizeClasses[size]} ${colors}`}>
-          {num}
+  <section id="analysis" class="tab">
+    <div class="card">
+      <div class="row"><h2 style="margin-right:auto">数字別 出現頻度ヒートマップ</h2><select id="period"><option value="0">全期間</option><option value="50">直近50回</option><option value="100">直近100回</option><option value="500">直近500回</option></select></div>
+      <div id="heat" class="heat"></div>
+    </div>
+    <div class="grid g2">
+      <div class="card"><h2>合計値分布</h2><div id="sumDist"></div></div>
+      <div class="card"><h2>連番傾向</h2><div id="seqStats"></div></div>
+    </div>
+  </section>
+
+  <section id="generator" class="tab">
+    <div class="card">
+      <h2>候補数字生成</h2>
+      <div class="grid g3">
+        <div><label>生成モード</label><select id="genMode"><option value="balance">統計バランス重視</option><option value="hot">ホット数字重視</option><option value="cold">コールド数字重視</option><option value="random">完全ランダム</option></select></div>
+        <div><label>生成口数</label><input id="genCount" type="number" min="1" max="20" value="5"></div>
+        <div style="align-self:end"><button class="primary" id="genBtn">候補を生成</button></div>
+      </div>
+      <p class="muted">生成した候補は、そのままバックテストへ送れます。1口だけ検証、全候補まとめて検証の両方に対応しています。</p>
+      <div class="actions" id="genBulkActions" style="display:none;margin:10px 0">
+        <button class="secondary" id="useAllCandBtn">全候補をバックテストへ送る</button>
+        <button class="secondary" id="appendAllCandBtn">全候補をバックテストへ追加入力</button>
+      </div>
+      <div id="genResults"></div>
+    </div>
+  </section>
+
+  <section id="sim" class="tab">
+    <div class="card">
+      <h2>バックテスト・シミュレーション</h2>
+      <div class="grid g3">
+        <div><label>検証する数字（1行=1口）</label><textarea id="simNums" rows="5">1,2,3,4,5,6</textarea><div class="textareaHint">例：1,2,3,4,5,6。候補生成から送ると複数口をまとめて検証できます。</div></div>
+        <div><label>検証回数</label><select id="simCount"><option value="50">直近50回</option><option value="100">直近100回</option><option value="500">直近500回</option><option value="0">全期間</option></select></div>
+        <div style="align-self:end"><button class="primary" id="simBtn">実行</button></div>
+      </div>
+      <div id="simResult" style="margin-top:16px"></div>
+    </div>
+  </section>
+
+  <section id="settings" class="tab">
+    <div class="grid g2">
+      <div class="card">
+        <h2>CSVダウンロード・直接読込</h2>
+        <p class="muted">直接読み込みはCORS制限で失敗する場合があります。その場合は「CSVを開く」から保存して、下のファイル取込を使ってください。</p>
+        <label>CSV URL</label>
+        <input id="csvUrl" value="https://loto6.thekyo.jp/data/loto6.csv">
+        <div class="actions" style="margin-top:10px">
+          <button class="primary" id="loadUrlBtn">URLから直接読込</button>
+          <a class="secondary" id="openCsv" href="https://loto6.thekyo.jp/data/loto6.csv" target="_blank" rel="noopener">CSVを開く</a>
+          <a class="secondary" href="https://loto6.thekyo.jp/download/index" target="_blank" rel="noopener">配布ページ</a>
+          <a class="secondary" href="https://www.mizuhobank.co.jp/takarakuji/check/loto/loto6/index.html" target="_blank" rel="noopener">公式確認</a>
         </div>
-      );
+        <div id="urlStatus" class="muted" style="margin-top:10px"></div>
+      </div>
+      <div class="card">
+        <h2>CSVファイル取込</h2>
+        <input type="file" id="fileInput" accept=".csv,text/csv">
+        <p class="muted">対応列名例：開催回/抽せん回、日付、数字1〜数字6、ボーナス、各等賞金・口数。列名が違うCSVでも、一般的な並びならできるだけ読みます。</p>
+        <div id="fileStatus" class="muted"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>保存先フォルダ・データ管理</h2>
+      <p class="muted">Chrome / Edge など対応ブラウザでは、保存先フォルダを指定してCSVを書き出せます。未対応ブラウザでは通常のダウンロード保存になります。</p>
+      <div class="actions">
+        <button class="secondary" id="chooseDirBtn">保存先フォルダを選択</button>
+        <button class="secondary" id="saveUrlCsvBtn">URLのCSVを保存</button>
+        <button class="secondary" id="exportBtn">現在データをCSV保存</button>
+        <button class="secondary" id="sampleBtn">サンプルデータ生成</button>
+        <button class="danger" id="clearBtn">全データ初期化</button>
+      </div>
+      <p class="muted" id="dirStatus">保存先: 未選択</p>
+      <p class="muted" id="dataInfo"></p>
+    </div>
+
+    <div class="card">
+      <h2>表示テーマ・リセット</h2>
+      <div class="grid g3">
+        <div>
+          <label>表示テーマ</label>
+          <select id="settingsTheme">
+            <option value="system">システムデフォルト</option>
+            <option value="dark">ダーク</option>
+            <option value="light">ライト</option>
+          </select>
+        </div>
+        <div style="align-self:end"><button type="button" class="secondary" id="settingsResetViewBtn">画面リセット</button></div>
+        <div style="align-self:end"><button type="button" class="danger" id="settingsResetAllBtn">全リセット</button></div>
+        <div style="align-self:end"><button type="button" class="danger" id="settingsForceSampleBtn">サンプルへ強制復帰</button></div>
+      </div>
+      <p class="muted">初心者向けには、普段は「画面リセット」で十分です。CSVデータまで消したい場合だけ「全リセット」を使ってください。</p>
+    </div>
+    <div class="card">
+      <h2>初心者向け SAVE / LOAD（JSON）</h2>
+      <p class="muted">SAVEは、読み込んだ抽せんデータ・生成候補・バックテスト入力など、アプリの状態をJSONファイルとして保存します。LOADは、そのJSONを読み込んで状態を復元します。</p>
+      <div class="actions">
+        <button class="primary" id="saveJsonBtn">SAVE：状態をJSON保存</button>
+        <label class="secondary" for="jsonInput" style="cursor:pointer">LOAD：JSONを選択</label>
+        <input type="file" id="jsonInput" accept=".json,application/json" style="display:none">
+      </div>
+      <p class="muted">CSVは「抽せんデータ表」、JSONは「このアプリのセーブデータ」と考えるとわかりやすいです。</p>
+      <div id="jsonStatus" class="muted"></div>
+    </div>
+  </section>
+</main>
+</div>
+<footer>買い過ぎ防止のため、余裕資金の範囲でお楽しみください。</footer>
+
+<script>
+(function(){
+'use strict';
+const KEY='loto6_real_stable_v1';
+const yen=n=>new Intl.NumberFormat('ja-JP',{style:'currency',currency:'JPY',maximumFractionDigits:0}).format(Number(n||0));
+const nf=n=>new Intl.NumberFormat('ja-JP').format(Number(n||0));
+const ballClass=n=> n<=10?'b1':n<=20?'b2':n<=30?'b3':n<=40?'b4':'b5';
+const ball=(n,b=false)=>`<span class="ball ${b?'bb':ballClass(n)}">${n}</span>`;
+const nCr=(n,r)=>{let x=1;for(let i=1;i<=r;i++)x=x*(n-i+1)/i;return Math.round(x)};
+const defaultState={drawData:[],source:'未読込',fileName:'',importedAt:'',theme:'system'};
+let state={...defaultState,...loadState()};
+let saveDirHandle=null;
+let lastCandidates=[];
+if(!state.drawData || !state.drawData.length){ state={...state, drawData:genMock(120), source:'サンプル', fileName:'自動生成サンプル', importedAt:new Date().toISOString()}; saveState(); }
+
+function loadState(){try{return JSON.parse(localStorage.getItem(KEY))||defaultState}catch(e){return defaultState}}
+function saveState(){localStorage.setItem(KEY,JSON.stringify(state))}
+function genMock(count){
+  const data=[];let d=new Date();d.setDate(d.getDate()-count*7);
+  for(let i=1;i<=count;i++){
+    const pool=Array.from({length:43},(_,j)=>j+1), nums=[];
+    while(nums.length<6){nums.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0])}
+    nums.sort((a,b)=>a-b); const bonus=pool[Math.floor(Math.random()*pool.length)];
+    data.push({id:i,date:d.toISOString().slice(0,10),numbers:nums,bonus,sales:1200000000+Math.floor(Math.random()*700000000),carryover:0,
+      prizes:{1:{winners:Math.floor(Math.random()*3),amount:200000000},2:{winners:1+Math.floor(Math.random()*8),amount:12000000},3:{winners:80+Math.floor(Math.random()*150),amount:300000},4:{winners:1000+Math.floor(Math.random()*4000),amount:6800},5:{winners:10000+Math.floor(Math.random()*50000),amount:1000}}});
+    d.setDate(d.getDate()+7);
+  }
+  return data.sort((a,b)=>b.id-a.id);
+}
+function stats(data=state.drawData){
+  const counts=Array(44).fill(0), last=Array(44).fill(999); let odd=0, even=0, sumT=0;
+  data.forEach((r,idx)=>{const s=r.numbers.reduce((a,b)=>a+b,0);sumT+=s;r.numbers.forEach(n=>{counts[n]++; if(last[n]===999)last[n]=idx; n%2?odd++:even++;});});
+  const ns=Array.from({length:43},(_,i)=>({num:i+1,count:counts[i+1],lastSeen:last[i+1]})).sort((a,b)=>b.count-a.count||a.num-b.num);
+  return {total:data.length, latest:data[0], avg:data.length?Math.round(sumT/data.length):0, odd, even, numStats:ns};
+}
+function normalizeKey(s){return String(s||'').replace(/^\uFEFF/,'').replace(/[ 　_\-（）()]/g,'').replace(/[０-９]/g,d=>String.fromCharCode(d.charCodeAt(0)-0xFEE0)).toLowerCase()}
+function parseLine(line){const out=[];let cur='',q=false;for(let i=0;i<line.length;i++){const c=line[i],n=line[i+1];if(c=='"'&&q&&n=='"'){cur+='"';i++}else if(c=='"'){q=!q}else if(c==','&&!q){out.push(cur.trim());cur=''}else cur+=c}out.push(cur.trim());return out}
+function num(v){const s=String(v??'').replace(/[^\d.-]/g,'');return s===''?0:Number(s)}
+function dateVal(v){const s=String(v||'').trim();const m=s.match(/(\d{4})[\/\-.年](\d{1,2})[\/\-.月](\d{1,2})/);return m?`${m[1]}-${String(m[2]).padStart(2,'0')}-${String(m[3]).padStart(2,'0')}`:s}
+function pick(row,pats){const keys=Object.keys(row);const f=keys.find(k=>pats.some(p=>normalizeKey(k).includes(normalizeKey(p))));return f?row[f]:undefined}
+function decode(buf){let u=new TextDecoder('utf-8').decode(buf);let s;try{s=new TextDecoder('shift_jis').decode(buf)}catch(e){s=u}
+  const score=t=>(t.match(/�/g)||[]).length*10-(t.match(/[開催抽選数字賞金口数日付]/g)||[]).length-Math.min((t.match(/,/g)||[]).length,100);
+  return score(s)<score(u)?{text:s,label:'Shift_JIS'}:{text:u,label:'UTF-8'};
+}
+function parseCSV(text){
+  const clean=String(text||'').replace(/\r\n/g,'\n').replace(/\r/g,'\n').trim(); if(!clean) throw new Error('CSVが空です。');
+  const lines=clean.split('\n').filter(x=>x.trim()); const header=parseLine(lines[0]).map(h=>h.replace(/^\uFEFF/,'').trim());
+  const parsed=[], errors=[];
+  lines.slice(1).forEach((line,idx)=>{
+    try{
+      const cols=parseLine(line), row={}; header.forEach((h,i)=>row[h]=cols[i]??'');
+      let id=num(pick(row,['開催回','抽せん回','抽選回','回号','回']) ?? cols[0]);
+      let date=dateVal(pick(row,['抽せん日','抽選日','日付']) ?? cols[1]);
+      let numbers=[]; for(let i=1;i<=6;i++){const v=pick(row,[`本数字${i}`,`数字${i}`,`第${i}数字`,`num${i}`,`n${i}`]); if(v!==undefined)numbers.push(num(v));}
+      if(numbers.length!==6 || numbers.some(n=>n<1||n>43)){ 
+        const cands=[cols.slice(2,8),cols.slice(3,9),cols.slice(1,7)];
+        const ok=cands.find(a=>a.length===6&&a.every(x=>num(x)>=1&&num(x)<=43));
+        if(ok)numbers=ok.map(num);
+      }
+      numbers=[...new Set(numbers.map(Number))].filter(n=>n>=1&&n<=43).slice(0,6).sort((a,b)=>a-b);
+      let bonus=num(pick(row,['ボーナス数字','ボーナス','bonus','bonusnumber']) ?? cols[8] ?? cols[7]);
+      if(!id||!date||numbers.length!==6||bonus<1||bonus>43) throw new Error(`必須項目不足 回=${id} 日付=${date} 数字=${numbers.join('-')} B=${bonus}`);
+      const prizes={}; [1,2,3,4,5].forEach(r=>prizes[r]={winners:num(pick(row,[`${r}等口数`,`${r}等当せん口数`,`${r}等当選口数`,`${r}等本数`])),amount:num(pick(row,[`${r}等賞金`,`${r}等当せん金`,`${r}等当選金`,`${r}等金額`]))});
+      parsed.push({id,date,numbers,bonus,sales:num(pick(row,['販売実績額','販売額','売上','sales'])),prizes,carryover:num(pick(row,['キャリーオーバー','carryover','繰越']))});
+    }catch(e){errors.push(`${idx+2}行目: ${e.message}`)}
+  });
+  const dedup=Array.from(new Map(parsed.map(d=>[d.id,d])).values()).sort((a,b)=>b.id-a.id);
+  if(!dedup.length) throw new Error('読み込める行がありませんでした。'+errors.slice(0,3).join(' / '));
+  return {data:dedup,errors};
+}
+
+function applyTheme(){
+  const theme=state.theme||'system';
+  document.body.dataset.theme=theme;
+  ['dashTheme','settingsTheme'].forEach(id=>{const el=document.getElementById(id); if(el && el.value!==theme) el.value=theme;});
+}
+function setTheme(theme){
+  state.theme=['system','dark','light'].includes(theme)?theme:'system';
+  saveState();
+  applyTheme();
+}
+function resetViewOnly(){
+  try{
+    lastCandidates=[];
+    const defaults={
+      csvUrl:'https://loto6.thekyo.jp/data/loto6.csv',
+      period:'0',
+      genMode:'balance',
+      genCount:'5',
+      simNums:'1,2,3,4,5,6',
+      simCount:'50'
+    };
+    restoreUIState(defaults);
+
+    const clearHtml=['simResult','genResults'];
+    clearHtml.forEach(id=>{const el=document.getElementById(id); if(el) el.innerHTML='';});
+
+    const clearText=['urlStatus','fileStatus','jsonStatus'];
+    clearText.forEach(id=>{const el=document.getElementById(id); if(el) el.textContent='';});
+
+    const genBulk=document.getElementById('genBulkActions');
+    if(genBulk) genBulk.style.display='none';
+
+    render();
+    showNotice('画面リセット完了：候補・バックテスト入力・作業欄を初期化しました。','ok');
+  }catch(e){
+    showNotice('画面リセット失敗：'+e.message,'bad');
+    alert('画面リセット失敗: '+e.message);
+  }
+}
+function resetAllData(){
+  try{
+    const keepTheme=state.theme||'system';
+
+    // iPad/Safari対策：
+    // 旧版・派生版の保存キーが残っていても、Loto6系の保存状態を強制的に削除する。
+    try{
+      const keys=[];
+      for(let i=0;i<localStorage.length;i++){
+        const k=localStorage.key(i);
+        if(k && /loto6|loto|real_stable/i.test(k)) keys.push(k);
+      }
+      keys.forEach(k=>localStorage.removeItem(k));
+      localStorage.removeItem(KEY);
+    }catch(e){}
+
+    lastCandidates=[];
+    saveDirHandle=null;
+
+    const sample=genMock(120);
+    state={
+      drawData:sample,
+      source:'サンプル',
+      fileName:'全リセット後の自動生成サンプル',
+      importedAt:new Date().toISOString(),
+      theme:keepTheme
     };
 
-    // --- Main Application ---
+    // 現在のKEYへ、サンプル状態を明示保存する。
+    try{
+      localStorage.setItem(KEY,JSON.stringify(state));
+    }catch(e){}
 
-    const App = () => {
-      const [activeTab, setActiveTab] = useState('dashboard');
-      const [drawData, setDrawData] = useLocalStorage('loto6_draw_data', []);
-      const [records, setRecords] = useLocalStorage('loto6_records', []);
-      const [settings, setSettings] = useLocalStorage('loto6_settings', {
-        theme: 'system',
-        budgetLimit: 10000,
-        generatorWeights: { frequency: 1, balance: 1, seq: 1 }
-      });
-
-      // Initialize Mock Data if empty
-      useEffect(() => {
-        if (drawData.length === 0) {
-          setDrawData(generateMockData(500));
-        }
-      }, []);
-
-      // Theme Management
-      useEffect(() => {
-        const root = window.document.documentElement;
-        if (settings.theme === 'dark' || (settings.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-          root.classList.add('dark');
-        } else {
-          root.classList.remove('dark');
-        }
-      }, [settings.theme]);
-
-      // Computed Stats
-      const stats = useMemo(() => {
-        if (!drawData.length) return null;
-        
-        const counts = Array(44).fill(0);
-        const lastSeen = Array(44).fill(null);
-        let oddCount = 0, evenCount = 0;
-        let sumTotal = 0;
-        const sums = [];
-        
-        drawData.forEach((d, idx) => {
-          const currentDrawIndex = drawData.length - idx; // ascending index
-          d.numbers.forEach(n => {
-            counts[n]++;
-            if (lastSeen[n] === null) lastSeen[n] = idx; // distance from latest
-            if (n % 2 === 0) evenCount++; else oddCount++;
-          });
-          const sum = d.numbers.reduce((a, b) => a + b, 0);
-          sumTotal += sum;
-          sums.push(sum);
-        });
-
-        const numStats = counts.map((c, i) => ({
-          num: i,
-          count: c,
-          lastSeen: lastSeen[i] !== null ? lastSeen[i] : 999
-        })).slice(1); // Remove 0 index
-
-        return {
-          totalDraws: drawData.length,
-          latest: drawData[0],
-          numStats: numStats.sort((a,b) => b.count - a.count), // by frequency
-          avgSum: Math.round(sumTotal / drawData.length),
-          oddRatio: Math.round((oddCount / (oddCount+evenCount)) * 100),
-          evenRatio: Math.round((evenCount / (oddCount+evenCount)) * 100),
-          allData: drawData
-        };
-      }, [drawData]);
-
-
-      // Tabs rendering
-      const renderTab = () => {
-        if (!stats) return <div className="p-8 text-center"><i className="ph ph-spinner ph-spin text-4xl text-brand-500"></i></div>;
-
-        switch (activeTab) {
-          case 'dashboard': return <TabDashboard stats={stats} />;
-          case 'analysis': return <TabAnalysis stats={stats} />;
-          case 'generator': return <TabGenerator stats={stats} settings={settings} onAddRecord={(r) => setRecords([r, ...records])} />;
-          case 'simulation': return <TabSimulation drawData={drawData} />;
-          case 'records': return <TabRecords records={records} setRecords={setRecords} budget={settings.budgetLimit} />;
-          case 'settings': return <TabSettings settings={settings} setSettings={setSettings} drawData={drawData} setDrawData={setDrawData} records={records} setRecords={setRecords} />;
-          default: return null;
-        }
-      };
-
-      const navItems = [
-        { id: 'dashboard', icon: 'ph-squares-four', label: 'ダッシュボード' },
-        { id: 'analysis', icon: 'ph-chart-bar', label: 'データ分析' },
-        { id: 'generator', icon: 'ph-magic-wand', label: '候補生成' },
-        { id: 'simulation', icon: 'ph-arrows-clockwise', label: 'シミュレーション' },
-        { id: 'records', icon: 'ph-wallet', label: '購入記録・収支' },
-        { id: 'settings', icon: 'ph-gear', label: '設定・データ管理' },
-      ];
-
-      return (
-        <div className="flex h-screen overflow-hidden">
-          {/* Sidebar (Desktop) */}
-          <aside className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 hidden md:flex flex-col">
-            <div className="p-6">
-              <h1 className="text-xl font-bold text-brand-600 dark:text-brand-400 flex items-center gap-2">
-                <i className="ph-fill ph-target text-2xl"></i>
-                Loto6 Analyzer
-              </h1>
-            </div>
-            <nav className="flex-1 px-4 space-y-2">
-              {navItems.map(item => (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors font-medium
-                    ${activeTab === item.id 
-                      ? 'bg-brand-50 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300' 
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50'}`}
-                >
-                  <i className={`ph ${item.icon} text-xl`}></i>
-                  {item.label}
-                </button>
-              ))}
-            </nav>
-            <div className="p-4 border-t border-gray-200 dark:border-gray-700 text-xs text-center text-gray-500">
-              <p>研究支援用ツール</p>
-              <p className="mt-1">※当せん保証はありません</p>
-            </div>
-          </aside>
-
-          {/* Main Content */}
-          <main className="flex-1 flex flex-col h-full overflow-hidden">
-            {/* Header (Mobile) */}
-            <header className="md:hidden bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex justify-between items-center z-10 shadow-sm">
-              <h1 className="text-lg font-bold text-brand-600 dark:text-brand-400 flex items-center gap-2">
-                <i className="ph-fill ph-target"></i>
-                Loto6 Analyzer
-              </h1>
-            </header>
-
-            <div className="flex-1 overflow-y-auto p-4 md:p-8 hide-scrollbar pb-24 md:pb-8">
-              <div className="max-w-6xl mx-auto">
-                <AlertBanner />
-                {renderTab()}
-              </div>
-            </div>
-
-            {/* Bottom Nav (Mobile) */}
-            <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex justify-around p-2 pb-safe z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
-              {navItems.map(item => (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  className={`flex flex-col items-center p-2 rounded-lg transition-colors
-                    ${activeTab === item.id ? 'text-brand-600 dark:text-brand-400' : 'text-gray-500 dark:text-gray-400'}`}
-                >
-                  <i className={`ph ${item.icon} text-2xl mb-1`}></i>
-                  <span className="text-[10px] whitespace-nowrap">{item.label.split('・')[0]}</span>
-                </button>
-              ))}
-            </nav>
-          </main>
-        </div>
-      );
+    // 入力欄・ファイル欄・表示欄を強制クリア。
+    const defaults={
+      csvUrl:'https://loto6.thekyo.jp/data/loto6.csv',
+      period:'0',
+      genMode:'balance',
+      genCount:'5',
+      simNums:'1,2,3,4,5,6',
+      simCount:'50'
     };
-
-    // ==========================================
-    // Tab: Dashboard
-    // ==========================================
-    const TabDashboard = ({ stats }) => {
-      const { latest, numStats, totalDraws, avgSum, oddRatio, evenRatio } = stats;
-
-      return (
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold">ダッシュボード</h2>
-
-          {/* KPI Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-              <p className="text-sm text-gray-500 dark:text-gray-400">収録データ数</p>
-              <p className="text-2xl font-bold mt-1">{totalDraws} <span className="text-sm font-normal">回</span></p>
-            </div>
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-              <p className="text-sm text-gray-500 dark:text-gray-400">平均合計値</p>
-              <p className="text-2xl font-bold mt-1">{avgSum}</p>
-            </div>
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-              <p className="text-sm text-gray-500 dark:text-gray-400">奇偶比率</p>
-              <p className="text-2xl font-bold mt-1 text-brand-600 dark:text-brand-400">{oddRatio}% <span className="text-sm text-gray-400">/</span> {evenRatio}%</p>
-            </div>
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-              <p className="text-sm text-gray-500 dark:text-gray-400">最も出ている数字</p>
-              <div className="mt-2 flex gap-2">
-                <Ball num={numStats[0].num} size="sm" />
-                <Ball num={numStats[1].num} size="sm" />
-                <Ball num={numStats[2].num} size="sm" />
-              </div>
-            </div>
-          </div>
-
-          {/* Latest Result */}
-          <div className="bg-gradient-to-r from-brand-600 to-indigo-700 text-white p-6 rounded-2xl shadow-md relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-20 text-6xl"><i className="ph-fill ph-ticket"></i></div>
-            <div className="relative z-10">
-              <div className="flex flex-col md:flex-row md:items-end justify-between mb-4">
-                <div>
-                  <h3 className="text-xl font-bold">最新の抽せん結果</h3>
-                  <p className="text-brand-100 mt-1">第 {latest.id} 回 ({latest.date})</p>
-                </div>
-                <div className="mt-2 md:mt-0 text-sm bg-black/20 px-3 py-1 rounded-full inline-flex">
-                  販売額: {fmtC(latest.sales)}
-                </div>
-              </div>
-              
-              <div className="flex flex-wrap gap-3 my-6">
-                {latest.numbers.map(n => <Ball key={n} num={n} size="lg" />)}
-                <div className="flex items-center justify-center w-10 text-xl font-bold">+</div>
-                <Ball num={latest.bonus} isBonus size="lg" />
-              </div>
-
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-sm bg-black/20 p-3 rounded-xl">
-                <div><span className="text-brand-200 block text-xs">1等</span>{latest.prizes[1].winners === 0 ? '該当なし' : fmtC(latest.prizes[1].amount)}</div>
-                <div><span className="text-brand-200 block text-xs">2等</span>{fmtC(latest.prizes[2].amount)}</div>
-                <div><span className="text-brand-200 block text-xs">3等</span>{fmtC(latest.prizes[3].amount)}</div>
-                <div><span className="text-brand-200 block text-xs">4等</span>{fmtC(latest.prizes[4].amount)}</div>
-                <div><span className="text-brand-200 block text-xs">キャリーオーバー</span>{latest.carryover > 0 ? fmtC(latest.carryover) : 'なし'}</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Tendency */}
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-            <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><i className="ph ph-fire text-red-500"></i> 出現頻度ランキング トップ10 & ワースト5</h3>
-            <div className="flex flex-wrap gap-4 mb-6">
-              <div className="flex-1 min-w-[250px]">
-                <h4 className="text-sm text-gray-500 mb-2">ホット数字 (出現回数多)</h4>
-                <div className="flex flex-wrap gap-2">
-                  {numStats.slice(0, 10).map((s, i) => (
-                    <div key={s.num} className="flex flex-col items-center bg-gray-50 dark:bg-gray-700 p-2 rounded-lg border border-gray-100 dark:border-gray-600">
-                      <span className="text-xs text-gray-400 font-bold mb-1">#{i+1}</span>
-                      <Ball num={s.num} size="md" />
-                      <span className="text-xs mt-1 font-medium">{s.count}回</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="flex-1 min-w-[250px]">
-                <h4 className="text-sm text-gray-500 mb-2">コールド数字 (出現回数少)</h4>
-                <div className="flex flex-wrap gap-2">
-                  {[...numStats].reverse().slice(0, 5).map((s, i) => (
-                    <div key={s.num} className="flex flex-col items-center bg-gray-50 dark:bg-gray-700 p-2 rounded-lg border border-gray-100 dark:border-gray-600">
-                      <Ball num={s.num} size="md" />
-                      <span className="text-xs mt-1 font-medium">{s.count}回</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      );
-    };
-
-    // ==========================================
-    // Tab: Analysis
-    // ==========================================
-    const TabAnalysis = ({ stats }) => {
-      const { allData } = stats;
-      const [period, setPeriod] = useState(0); // 0 = All, 50, 100
-
-      const analysisData = useMemo(() => {
-        const targetData = period === 0 ? allData : allData.slice(0, period);
-        const counts = Array(44).fill(0);
-        let sumTotal = 0;
-        const sumsMap = {};
-        let seq2 = 0, seq3 = 0;
-
-        targetData.forEach(d => {
-          let currentSeq = 1;
-          for(let i=0; i<d.numbers.length; i++) {
-            counts[d.numbers[i]]++;
-            // check sequence
-            if(i > 0 && d.numbers[i] === d.numbers[i-1] + 1) {
-              currentSeq++;
-            } else {
-              if (currentSeq === 2) seq2++;
-              if (currentSeq >= 3) seq3++;
-              currentSeq = 1;
-            }
-          }
-          if (currentSeq === 2) seq2++;
-          if (currentSeq >= 3) seq3++;
-
-          const sum = d.numbers.reduce((a,b)=>a+b, 0);
-          const sumRange = Math.floor(sum / 20) * 20; // Group by 20s
-          sumsMap[sumRange] = (sumsMap[sumRange] || 0) + 1;
-        });
-
-        const maxCount = Math.max(...counts.slice(1));
-        const heatMap = counts.slice(1).map((c, i) => ({ num: i+1, count: c, intensity: c / maxCount }));
-
-        return { heatMap, seq2, seq3, sumsMap, targetCount: targetData.length };
-      }, [allData, period]);
-
-      return (
-        <div className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold">データ分析</h2>
-            <select 
-              className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1 shadow-sm"
-              value={period} onChange={(e) => setPeriod(Number(e.target.value))}
-            >
-              <option value="0">全期間</option>
-              <option value="100">直近100回</option>
-              <option value="50">直近50回</option>
-            </select>
-          </div>
-
-          {/* Heatmap */}
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-            <h3 className="text-lg font-bold mb-4">数字別 出現頻度ヒートマップ</h3>
-            <p className="text-sm text-gray-500 mb-4">色が濃いほど出現回数が多いことを示します。（対象: {analysisData.targetCount}回）</p>
-            <div className="grid grid-cols-7 sm:grid-cols-10 gap-2">
-              {analysisData.heatMap.map(item => (
-                <div key={item.num} className="flex flex-col items-center relative group">
-                  <div 
-                    className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-gray-800 transition-all border border-gray-200"
-                    style={{ 
-                      backgroundColor: `rgba(59, 130, 246, ${Math.max(0.1, item.intensity)})`,
-                      color: item.intensity > 0.6 ? 'white' : 'inherit'
-                    }}
-                  >
-                    {item.num}
-                  </div>
-                  <span className="text-[10px] text-gray-500 mt-1">{item.count}回</span>
-                  {/* Tooltip */}
-                  <div className="absolute bottom-full mb-2 hidden group-hover:block bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
-                    数字: {item.num} <br/>出現: {item.count}回 <br/>率: {((item.count/analysisData.targetCount)*100).toFixed(1)}%
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Sum Distribution */}
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-              <h3 className="text-lg font-bold mb-4">合計値の分布帯</h3>
-              <div className="space-y-3 mt-4">
-                {Object.entries(analysisData.sumsMap).sort((a,b) => Number(a[0]) - Number(b[0])).map(([range, count]) => {
-                  const pct = (count / analysisData.targetCount) * 100;
-                  return (
-                    <div key={range} className="flex items-center text-sm">
-                      <div className="w-16 text-right mr-3 text-gray-600 dark:text-gray-400">{range}〜</div>
-                      <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-4 overflow-hidden flex">
-                        <div className="bg-indigo-500 h-full rounded-full" style={{ width: `${Math.max(pct, 1)}%` }}></div>
-                      </div>
-                      <div className="w-12 text-right ml-3 font-medium">{pct.toFixed(1)}%</div>
-                    </div>
-                  );
-                })}
-              </div>
-              <p className="text-xs text-gray-500 mt-4">※理論上の平均値は132です。中央値付近の釣鐘型（正規分布に近い形）になる傾向があります。</p>
-            </div>
-
-            {/* Sequence Analysis */}
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-              <h3 className="text-lg font-bold mb-4">連番パターンの出現傾向</h3>
-              <div className="flex flex-col gap-6 h-full justify-center pb-8">
-                <div>
-                  <div className="flex justify-between mb-1">
-                    <span className="font-medium text-gray-700 dark:text-gray-300">2連番 (例: 12,13) を含む回数</span>
-                    <span className="font-bold">{analysisData.seq2}回</span>
-                  </div>
-                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
-                    <div className="bg-green-500 h-4 rounded-full" style={{ width: `${(analysisData.seq2 / analysisData.targetCount) * 100}%` }}></div>
-                  </div>
-                  <p className="text-xs text-right mt-1 text-gray-500">{((analysisData.seq2 / analysisData.targetCount) * 100).toFixed(1)}% の確率</p>
-                </div>
-                
-                <div>
-                  <div className="flex justify-between mb-1">
-                    <span className="font-medium text-gray-700 dark:text-gray-300">3連番以上 (例: 5,6,7) を含む回数</span>
-                    <span className="font-bold">{analysisData.seq3}回</span>
-                  </div>
-                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
-                    <div className="bg-orange-500 h-4 rounded-full" style={{ width: `${(analysisData.seq3 / analysisData.targetCount) * 100}%` }}></div>
-                  </div>
-                  <p className="text-xs text-right mt-1 text-gray-500">{((analysisData.seq3 / analysisData.targetCount) * 100).toFixed(1)}% の確率</p>
-                </div>
-                <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded text-sm text-gray-600 dark:text-gray-400">
-                  <i className="ph ph-info mr-1"></i>
-                  一般的に、6個の数字を選ぶロト6において、少なくとも1組の「2連番」が含まれる確率は約50%強と言われています。
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-    };
-
-
-    // ==========================================
-    // Tab: Generator
-    // ==========================================
-    const TabGenerator = ({ stats, settings, onAddRecord }) => {
-      const [mode, setMode] = useState('balance'); // random, frequency, cold, balance
-      const [fixedNums, setFixedNums] = useState([]);
-      const [excludeNums, setExcludeNums] = useState([]);
-      const [generateCount, setGenerateCount] = useState(5);
-      const [results, setResults] = useState([]);
-      const [isGenerating, setIsGenerating] = useState(false);
-
-      const toggleNum = (num, list, setList) => {
-        if (list.includes(num)) setList(list.filter(n => n !== num));
-        else if (list.length < 5) setList([...list, num]); // Max 5 limits for fixed/exclude to avoid impossible cases
-      };
-
-      // Scoring Logic
-      const calculateScore = (nums, mode) => {
-        let score = 0;
-        let reasons = [];
-
-        // 1. Sum score
-        const sum = nums.reduce((a,b)=>a+b,0);
-        if (sum >= 100 && sum <= 164) { score += 20; reasons.push("合計値適正"); }
-        else if (sum < 80 || sum > 180) { score -= 20; reasons.push("合計値極端"); }
-
-        // 2. Odd/Even Balance
-        const odd = nums.filter(n => n % 2 !== 0).length;
-        if (odd === 3) { score += 30; reasons.push("奇偶バランス最適(3:3)"); }
-        else if (odd === 2 || odd === 4) { score += 15; reasons.push("奇偶バランス良好"); }
-        else { score -= 10; reasons.push("奇偶偏り大"); }
-
-        // 3. Sequence
-        let hasSeq = false;
-        for(let i=1; i<nums.length; i++) {
-          if(nums[i] === nums[i-1]+1) hasSeq = true;
-        }
-        if (hasSeq) { score += 20; reasons.push("連番あり"); }
-
-        // 4. Frequency/Cold weight
-        let freqScore = 0;
-        nums.forEach(n => {
-          const stat = stats.numStats.find(s => s.num === n);
-          // Simple normalization: count ranking
-          const rank = stats.numStats.findIndex(s => s.num === n);
-          if (mode === 'frequency') {
-            if (rank < 10) freqScore += 5;
-            if (rank > 35) freqScore -= 3;
-          } else if (mode === 'cold') {
-            if (stat.lastSeen > 20) freqScore += 5; // Long unseen
-            if (rank > 35) freqScore += 3;
-          } else if (mode === 'balance') {
-             // Mixed
-             if (rank < 10) freqScore += 2;
-             if (stat.lastSeen > 20) freqScore += 2;
-          }
-        });
-        score += freqScore;
-        if(freqScore > 10) reasons.push("傾向スコア高");
-
-        return { score: Math.max(0, Math.min(100, score + 20)), reasons: reasons.slice(0,3) }; // Normalize 0-100 roughly
-      };
-
-      const handleGenerate = () => {
-        setIsGenerating(true);
-        setTimeout(() => {
-          const newResults = [];
-          const pool = Array.from({length: 43}, (_, i) => i + 1).filter(n => !excludeNums.includes(n));
-          
-          if (pool.length < 6) {
-            alert("除外数字が多すぎます");
-            setIsGenerating(false);
-            return;
-          }
-
-          // Generate many and pick best ones based on mode
-          const candidates = [];
-          for(let i=0; i<1000; i++) {
-            let tempPool = [...pool];
-            let currentNums = [...fixedNums];
-            tempPool = tempPool.filter(n => !currentNums.includes(n));
-            
-            while(currentNums.length < 6) {
-              const idx = Math.floor(Math.random() * tempPool.length);
-              currentNums.push(tempPool.splice(idx, 1)[0]);
-            }
-            currentNums.sort((a,b)=>a-b);
-            
-            if (mode === 'random') {
-              candidates.push({ nums: currentNums, score: 50, reasons: ["完全ランダム"] });
-            } else {
-              candidates.push({ nums: currentNums, ...calculateScore(currentNums, mode) });
-            }
-          }
-
-          if (mode === 'random') {
-             candidates.sort(() => Math.random() - 0.5);
-          } else {
-             candidates.sort((a,b) => b.score - a.score); // Highest score first
-          }
-
-          // Avoid exactly same combinations
-          const uniqueResults = [];
-          const seenStr = new Set();
-          for(let c of candidates) {
-            const str = c.nums.join(',');
-            if(!seenStr.has(str)) {
-              seenStr.add(str);
-              uniqueResults.push(c);
-            }
-            if(uniqueResults.length >= generateCount) break;
-          }
-
-          setResults(uniqueResults);
-          setIsGenerating(false);
-        }, 500); // Simulate processing time
-      };
-
-      const addAllToRecord = () => {
-        if(!results.length) return;
-        const record = {
-          id: crypto.randomUUID(),
-          date: new Date().toISOString().split('T')[0],
-          drawId: stats.latest.id + 1, // Next draw
-          numbers: results.map(r => r.nums),
-          cost: results.length * 200,
-          isSimulation: true,
-          memo: `生成モード: ${mode}`
-        };
-        onAddRecord(record);
-        alert(`第${record.drawId}回のシミュレーション記録として ${results.length} 口追加しました。`);
-      };
-
-      return (
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold">候補数字生成 <span className="text-sm font-normal text-gray-500">※研究用</span></h2>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Controls */}
-            <div className="lg:col-span-1 space-y-6">
-              <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-                <h3 className="font-bold mb-3 border-b pb-2 dark:border-gray-700">生成モード</h3>
-                <div className="space-y-2">
-                  {[
-                    { id: 'balance', label: '統計バランス重視', desc: '過去データに基づく理想的な合計値・奇偶・連番バランスを狙う' },
-                    { id: 'frequency', label: 'ホット数字重視', desc: '出現頻度の高い数字を優先的に組み込む' },
-                    { id: 'cold', label: 'コールド数字狙い', desc: '長期間出ていない数字（ご無沙汰）を狙う' },
-                    { id: 'random', label: '完全ランダム', desc: '統計を無視してコンピュータの乱数のみで生成' }
-                  ].map(m => (
-                    <label key={m.id} className={`flex p-3 border rounded-lg cursor-pointer transition-colors ${mode === m.id ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/30' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'}`}>
-                      <input type="radio" name="mode" className="mt-1 mr-3 text-brand-600 focus:ring-brand-500" checked={mode === m.id} onChange={() => setMode(m.id)} />
-                      <div>
-                        <div className="font-medium text-sm">{m.label}</div>
-                        <div className="text-xs text-gray-500 mt-0.5">{m.desc}</div>
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-                <h3 className="font-bold mb-3 border-b pb-2 dark:border-gray-700">条件指定</h3>
-                
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    固定する数字 (最大5個): <span className="text-brand-600 font-bold">{fixedNums.length}</span>
-                  </label>
-                  <div className="flex gap-2 mb-2">
-                    {fixedNums.map(n => <Ball key={n} num={n} size="sm" />)}
-                    {fixedNums.length === 0 && <span className="text-sm text-gray-400">指定なし</span>}
-                  </div>
-                  <select 
-                    className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded p-2 text-sm"
-                    onChange={(e) => { if(e.target.value) toggleNum(Number(e.target.value), fixedNums, setFixedNums); e.target.value=""; }}
-                  >
-                    <option value="">+ 数字を追加</option>
-                    {Array.from({length:43},(_,i)=>i+1).filter(n => !fixedNums.includes(n) && !excludeNums.includes(n)).map(n => (
-                      <option key={n} value={n}>{n}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    除外する数字 (最大5個): <span className="text-red-600 font-bold">{excludeNums.length}</span>
-                  </label>
-                  <div className="flex gap-2 mb-2">
-                    {excludeNums.map(n => <div key={n} className="w-6 h-6 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center text-xs font-bold line-through">{n}</div>)}
-                    {excludeNums.length === 0 && <span className="text-sm text-gray-400">指定なし</span>}
-                  </div>
-                  <select 
-                    className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded p-2 text-sm"
-                    onChange={(e) => { if(e.target.value) toggleNum(Number(e.target.value), excludeNums, setExcludeNums); e.target.value=""; }}
-                  >
-                    <option value="">+ 数字を追加</option>
-                    {Array.from({length:43},(_,i)=>i+1).filter(n => !fixedNums.includes(n) && !excludeNums.includes(n)).map(n => (
-                      <option key={n} value={n}>{n}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-                 <label className="block text-sm font-medium mb-2">生成口数: {generateCount}口</label>
-                 <input type="range" min="1" max="10" value={generateCount} onChange={(e)=>setGenerateCount(Number(e.target.value))} className="w-full accent-brand-500" />
-                 
-                 <button 
-                  onClick={handleGenerate}
-                  disabled={isGenerating}
-                  className={`w-full mt-6 py-3 rounded-lg font-bold text-white transition-all flex justify-center items-center gap-2
-                    ${isGenerating ? 'bg-brand-400 cursor-not-allowed' : 'bg-brand-600 hover:bg-brand-700 shadow-md hover:shadow-lg'}`}
-                >
-                  {isGenerating ? <i className="ph ph-spinner ph-spin text-xl"></i> : <i className="ph ph-magic-wand text-xl"></i>}
-                  {isGenerating ? '生成中...' : '候補を生成する'}
-                </button>
-              </div>
-            </div>
-
-            {/* Results */}
-            <div className="lg:col-span-2">
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 min-h-[400px]">
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-lg font-bold">生成結果</h3>
-                  {results.length > 0 && (
-                    <button onClick={addAllToRecord} className="text-sm bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded shadow transition-colors flex items-center gap-1">
-                      <i className="ph ph-plus-circle"></i> 記録に追加
-                    </button>
-                  )}
-                </div>
-
-                {results.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-64 text-gray-400">
-                    <i className="ph ph-magic-wand text-4xl mb-2 opacity-50"></i>
-                    <p>左側のパネルから条件を指定して生成してください</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {results.map((r, idx) => (
-                      <div key={idx} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-900/50 hover:border-brand-300 transition-colors">
-                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                          <div className="flex flex-wrap gap-2">
-                            <span className="w-6 text-gray-400 font-bold flex items-center justify-center">{(idx+1).toString().padStart(2, '0')}</span>
-                            {r.nums.map(n => <Ball key={n} num={n} size="md" />)}
-                          </div>
-                          
-                          <div className="flex flex-col items-end w-full sm:w-auto border-t sm:border-t-0 pt-2 sm:pt-0 mt-2 sm:mt-0 border-gray-200 dark:border-gray-700">
-                            <div className="text-sm flex items-center gap-1 mb-1">
-                              <span className="text-gray-500">評価スコア:</span>
-                              <span className={`font-bold ${r.score >= 80 ? 'text-green-500' : r.score >= 60 ? 'text-blue-500' : 'text-orange-500'}`}>{r.score}</span>
-                            </div>
-                            <div className="flex flex-wrap gap-1 justify-end">
-                              {r.reasons.map((rsn, i) => (
-                                <span key={i} className="text-[10px] bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 px-1.5 py-0.5 rounded text-gray-600 dark:text-gray-300">
-                                  {rsn}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-    };
-
-    // ==========================================
-    // Tab: Simulation
-    // ==========================================
-    const TabSimulation = ({ drawData }) => {
-      const [testCount, setTestCount] = useState(50);
-      const [simNumbers, setSimNumbers] = useState([1, 2, 3, 4, 5, 6]);
-      const [simResult, setSimResult] = useState(null);
-      const [isRunning, setIsRunning] = useState(false);
-
-      const runSimulation = () => {
-        setIsRunning(true);
-        setTimeout(() => {
-          const targetData = drawData.slice(0, testCount);
-          let cost = 0;
-          let winAmount = 0;
-          let winCounts = {1:0, 2:0, 3:0, 4:0, 5:0, 0:0};
-          const details = [];
-
-          targetData.forEach(draw => {
-            cost += 200;
-            const rank = checkWin(simNumbers, draw.numbers, draw.bonus);
-            winCounts[rank]++;
-            
-            let wAmount = 0;
-            if (rank > 0) {
-              wAmount = draw.prizes[rank].amount;
-              winAmount += wAmount;
-              details.push({
-                id: draw.id,
-                date: draw.date,
-                rank,
-                amount: wAmount,
-                resultNums: draw.numbers,
-                bonus: draw.bonus
-              });
-            }
-          });
-
-          setSimResult({
-            count: testCount,
-            cost,
-            winAmount,
-            profit: winAmount - cost,
-            recoveryRate: cost > 0 ? (winAmount / cost) * 100 : 0,
-            winCounts,
-            details: details.sort((a,b) => b.id - a.id)
-          });
-          setIsRunning(false);
-        }, 600);
-      };
-
-      const handleNumChange = (index, val) => {
-        const newNums = [...simNumbers];
-        newNums[index] = Number(val);
-        setSimNumbers(newNums.sort((a,b)=>a-b));
-      };
-
-      return (
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold">バックテスト・シミュレーション</h2>
-          <p className="text-gray-600 dark:text-gray-400">指定した数字を過去の抽せんデータと照らし合わせ、もし毎回買っていたらどうなっていたかを検証します。</p>
-
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              
-              {/* Settings */}
-              <div>
-                <h3 className="font-bold mb-4 border-b pb-2 dark:border-gray-700">検証条件</h3>
-                
-                <div className="mb-6">
-                  <label className="block text-sm font-medium mb-2">検証する数字 (6個)</label>
-                  <div className="flex gap-2 flex-wrap">
-                    {simNumbers.map((num, i) => (
-                      <select 
-                        key={i}
-                        value={num}
-                        onChange={(e) => handleNumChange(i, e.target.value)}
-                        className="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded p-2 text-sm w-16 text-center font-bold"
-                      >
-                        {Array.from({length:43},(_,idx)=>idx+1).map(n => <option key={n} value={n}>{n}</option>)}
-                      </select>
-                    ))}
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2">※重複しないように選択してください</p>
-                </div>
-
-                <div className="mb-6">
-                  <label className="block text-sm font-medium mb-2">対象期間 (直近からの回数)</label>
-                  <select 
-                    value={testCount}
-                    onChange={(e) => setTestCount(Number(e.target.value))}
-                    className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded p-2"
-                  >
-                    <option value="10">直近 10回 (約2.5ヶ月)</option>
-                    <option value="50">直近 50回 (約1年)</option>
-                    <option value="100">直近 100回 (約2年)</option>
-                    <option value="500">直近 500回 (約10年)</option>
-                    <option value={drawData.length}>全期間 ({drawData.length}回)</option>
-                  </select>
-                </div>
-
-                <button 
-                  onClick={runSimulation}
-                  disabled={isRunning}
-                  className={`w-full py-3 rounded-lg font-bold text-white transition-all flex justify-center items-center gap-2
-                    ${isRunning ? 'bg-gray-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 shadow-md'}`}
-                >
-                  {isRunning ? <i className="ph ph-spinner ph-spin text-xl"></i> : <i className="ph ph-play-circle text-xl"></i>}
-                  {isRunning ? '検証中...' : 'シミュレーション実行'}
-                </button>
-              </div>
-
-              {/* Results Overview */}
-              <div>
-                <h3 className="font-bold mb-4 border-b pb-2 dark:border-gray-700">結果サマリー</h3>
-                {simResult ? (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg border border-gray-200 dark:border-gray-600">
-                        <p className="text-xs text-gray-500">総投資額 ({simResult.count}回)</p>
-                        <p className="text-lg font-bold text-gray-800 dark:text-gray-200">{fmtC(simResult.cost)}</p>
-                      </div>
-                      <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg border border-gray-200 dark:border-gray-600">
-                        <p className="text-xs text-gray-500">総回収額</p>
-                        <p className={`text-lg font-bold ${simResult.winAmount > 0 ? 'text-blue-600 dark:text-blue-400' : 'text-gray-800 dark:text-gray-200'}`}>
-                          {fmtC(simResult.winAmount)}
-                        </p>
-                      </div>
-                      <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg border border-gray-200 dark:border-gray-600">
-                        <p className="text-xs text-gray-500">最終収支</p>
-                        <p className={`text-lg font-bold ${simResult.profit > 0 ? 'text-green-600' : simResult.profit < 0 ? 'text-red-600' : 'text-gray-800'}`}>
-                          {simResult.profit > 0 ? '+' : ''}{fmtC(simResult.profit)}
-                        </p>
-                      </div>
-                      <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg border border-gray-200 dark:border-gray-600">
-                        <p className="text-xs text-gray-500">回収率</p>
-                        <p className={`text-lg font-bold ${simResult.recoveryRate >= 100 ? 'text-green-600' : 'text-orange-500'}`}>
-                          {simResult.recoveryRate.toFixed(1)}%
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="mt-4">
-                      <p className="text-sm font-medium mb-2">当せん内訳</p>
-                      <div className="flex justify-between text-sm bg-gray-100 dark:bg-gray-900 p-2 rounded">
-                        <span className="text-yellow-600 font-bold">1等: {simResult.winCounts[1]}回</span>
-                        <span className="text-gray-600">2等: {simResult.winCounts[2]}回</span>
-                        <span className="text-red-500">3等: {simResult.winCounts[3]}回</span>
-                        <span className="text-blue-500">4等: {simResult.winCounts[4]}回</span>
-                        <span className="text-green-500">5等: {simResult.winCounts[5]}回</span>
-                      </div>
-                    </div>
-                    {simResult.recoveryRate < 50 && (
-                      <p className="text-xs text-red-500 mt-2"><i className="ph ph-info"></i> 宝くじの控除率（テラ銭）は約55%のため、長期的に同じ数字を買い続けると回収率は45%程度に収束する傾向があります。</p>
-                    )}
-                  </div>
-                ) : (
-                  <div className="h-full flex flex-col items-center justify-center text-gray-400 py-10">
-                    <i className="ph ph-chart-line-up text-4xl mb-2 opacity-50"></i>
-                    <p className="text-sm">条件を設定して実行してください</p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Detailed Results List */}
-            {simResult && simResult.details.length > 0 && (
-              <div className="mt-8 border-t border-gray-200 dark:border-gray-700 pt-6">
-                <h3 className="font-bold mb-4">当せん履歴 ({simResult.details.length}件)</h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left">
-                    <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700/50 dark:text-gray-300">
-                      <tr>
-                        <th className="px-4 py-3 rounded-tl-lg">回号 / 日付</th>
-                        <th className="px-4 py-3">結果数字</th>
-                        <th className="px-4 py-3">等級</th>
-                        <th className="px-4 py-3 rounded-tr-lg">当せん金</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {simResult.details.map((d, i) => (
-                        <tr key={i} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                          <td className="px-4 py-3 font-medium">第{d.id}回 <br/><span className="text-xs text-gray-500">{d.date}</span></td>
-                          <td className="px-4 py-3">
-                            <div className="flex gap-1">
-                              {d.resultNums.map((n, idx) => (
-                                <span key={idx} className={`w-5 h-5 flex items-center justify-center rounded-full text-[10px] font-bold ${simNumbers.includes(n) ? 'bg-brand-500 text-white' : 'bg-gray-200 text-gray-500 dark:bg-gray-600 dark:text-gray-400'}`}>
-                                  {n}
-                                </span>
-                              ))}
-                              <span className="w-5 h-5 flex items-center justify-center rounded-full text-[10px] font-bold border border-gray-400 bg-white dark:bg-gray-800 text-gray-500">
-                                {d.bonus}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 font-bold text-brand-600 dark:text-brand-400">{d.rank}等</td>
-                          <td className="px-4 py-3">{fmtC(d.amount)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      );
-    };
-
-
-    // ==========================================
-    // Tab: Records (Purchases)
-    // ==========================================
-    const TabRecords = ({ records, setRecords, budget }) => {
-      const deleteRecord = (id) => {
-        if(confirm("この記録を削除しますか？")) {
-          setRecords(records.filter(r => r.id !== id));
-        }
-      };
-
-      // Calculate this month cost
-      const currentMonth = new Date().toISOString().substring(0, 7); // YYYY-MM
-      const monthlyCost = records
-        .filter(r => r.date.startsWith(currentMonth))
-        .reduce((sum, r) => sum + r.cost, 0);
-      
-      const budgetPct = Math.min(100, (monthlyCost / budget) * 100);
-
-      return (
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold">購入記録・収支管理</h2>
-
-          {/* Budget Widget */}
-          <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-            <h3 className="font-bold mb-2 flex items-center gap-2">
-              <i className="ph ph-wallet"></i> 今月の利用状況 ({currentMonth})
-            </h3>
-            <div className="flex justify-between items-end mb-1">
-              <span className="text-sm text-gray-500">購入総額: <span className="text-lg font-bold text-gray-800 dark:text-gray-200">{fmtC(monthlyCost)}</span></span>
-              <span className="text-sm text-gray-500">予算設定: {fmtC(budget)}</span>
-            </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-              <div 
-                className={`h-3 rounded-full transition-all duration-500 ${budgetPct > 90 ? 'bg-red-500' : budgetPct > 70 ? 'bg-yellow-500' : 'bg-green-500'}`} 
-                style={{ width: `${budgetPct}%` }}
-              ></div>
-            </div>
-            {budgetPct > 90 && (
-              <p className="text-xs text-red-500 mt-2 font-bold flex items-center gap-1">
-                <i className="ph-fill ph-warning-circle"></i> 予算上限に近づいています。無理のない範囲でお楽しみください。
-              </p>
-            )}
-          </div>
-
-          {/* List */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-800/80">
-              <h3 className="font-bold">履歴一覧</h3>
-              <span className="text-sm text-gray-500">全 {records.length} 件</span>
-            </div>
-            
-            {records.length === 0 ? (
-              <div className="p-10 text-center text-gray-400">
-                <i className="ph ph-folder-open text-4xl mb-2 opacity-50"></i>
-                <p>記録がありません。「候補生成」タブから追加できます。</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left whitespace-nowrap">
-                  <thead className="text-xs text-gray-500 uppercase bg-gray-100 dark:bg-gray-900/50">
-                    <tr>
-                      <th className="px-4 py-3">登録日 / 対象回</th>
-                      <th className="px-4 py-3">購入内容 (口数)</th>
-                      <th className="px-4 py-3">投資額</th>
-                      <th className="px-4 py-3">種別</th>
-                      <th className="px-4 py-3 text-right">操作</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {records.map(r => (
-                      <tr key={r.id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                        <td className="px-4 py-3">
-                          <div className="font-medium text-gray-900 dark:text-gray-100">{r.date}</div>
-                          <div className="text-xs text-gray-500">第 {r.drawId} 回</div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex flex-col gap-1">
-                            {r.numbers.slice(0, 2).map((nums, idx) => (
-                              <div key={idx} className="flex gap-1">
-                                {nums.map(n => <span key={n} className="w-4 h-4 flex items-center justify-center bg-gray-200 dark:bg-gray-600 rounded text-[9px] font-bold">{n}</span>)}
-                              </div>
-                            ))}
-                            {r.numbers.length > 2 && <span className="text-xs text-gray-400">他 {r.numbers.length - 2} 口...</span>}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 font-medium">{fmtC(r.cost)}</td>
-                        <td className="px-4 py-3">
-                          <span className={`px-2 py-1 text-[10px] rounded-full font-bold ${r.isSimulation ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300' : 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300'}`}>
-                            {r.isSimulation ? 'シミュレーション' : '実購入'}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                           <button onClick={() => deleteRecord(r.id)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 p-1.5 rounded transition-colors" title="削除">
-                             <i className="ph ph-trash text-lg"></i>
-                           </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </div>
-      );
-    };
-
-    // ==========================================
-    // Tab: Settings
-    // ==========================================
-    const TabSettings = ({ settings, setSettings, drawData, setDrawData, records, setRecords }) => {
-      
-      const handleThemeChange = (e) => setSettings({...settings, theme: e.target.value});
-      const handleBudgetChange = (e) => setSettings({...settings, budgetLimit: Number(e.target.value)});
-
-      const handleExportCSV = () => {
-        if(drawData.length === 0) return alert('エクスポートするデータがありません。');
-        
-        // Headers
-        let csvContent = "抽せん回,日付,数字1,数字2,数字3,数字4,数字5,数字6,ボーナス,販売実績額,1等口数,1等賞金,2等口数,2等賞金,3等口数,3等賞金,4等口数,4等賞金,5等口数,5等賞金,キャリーオーバー\n";
-        
-        drawData.forEach(d => {
-          const row = [
-            d.id, d.date, ...d.numbers, d.bonus, d.sales,
-            d.prizes[1].winners, d.prizes[1].amount,
-            d.prizes[2].winners, d.prizes[2].amount,
-            d.prizes[3].winners, d.prizes[3].amount,
-            d.prizes[4].winners, d.prizes[4].amount,
-            d.prizes[5].winners, d.prizes[5].amount,
-            d.carryover
-          ];
-          csvContent += row.join(",") + "\n";
-        });
-
-        // Add BOM for Excel UTF-8 compatibility
-        const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
-        const blob = new Blob([bom, csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `loto6_data_${new Date().toISOString().split('T')[0]}.csv`;
-        link.click();
-        URL.revokeObjectURL(url);
-      };
-
-      const handleGenerateMock = () => {
-        if(confirm("現在のデータを破棄して、新しくサンプルデータ(過去1000回分)を生成しますか？\n※これは実際のデータではありません。")) {
-          setDrawData(generateMockData(1000));
-          alert("サンプルデータを生成しました。");
-        }
-      };
-
-      const clearAllData = () => {
-        if(confirm("【警告】すべての抽せんデータと購入記録を削除します。元には戻せません。よろしいですか？")) {
-          setDrawData([]);
-          setRecords([]);
-          alert("初期化しました。");
-        }
-      };
-
-      return (
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold">設定・データ管理</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* App Settings */}
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-              <h3 className="font-bold mb-4 border-b pb-2 dark:border-gray-700 flex items-center gap-2"><i className="ph ph-sliders-horizontal"></i> アプリ設定</h3>
-              
-              <div className="space-y-5">
-                <div>
-                  <label className="block text-sm font-medium mb-2">テーマ (外観)</label>
-                  <select value={settings.theme} onChange={handleThemeChange} className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded p-2.5">
-                    <option value="system">システムに従う</option>
-                    <option value="light">ライトモード</option>
-                    <option value="dark">ダークモード</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">月間予算上限 (アラート用)</label>
-                  <p className="text-xs text-gray-500 mb-2">使いすぎ防止のため、設定金額に近づくと警告を表示します。</p>
-                  <div className="flex items-center gap-2">
-                    <input 
-                      type="number" 
-                      value={settings.budgetLimit} 
-                      onChange={handleBudgetChange}
-                      className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded p-2.5"
-                      step="1000" min="0"
-                    />
-                    <span>円</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Data Management */}
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-              <h3 className="font-bold mb-4 border-b pb-2 dark:border-gray-700 flex items-center gap-2"><i className="ph ph-database"></i> データ入出力</h3>
-              
-              <div className="space-y-4">
-                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                  <p className="text-sm text-blue-800 dark:text-blue-200 mb-2">現在 {drawData.length} 件の抽せんデータを保持しています。</p>
-                  <button onClick={handleExportCSV} className="w-full bg-white dark:bg-gray-800 border border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400 font-medium py-2 rounded hover:bg-blue-50 transition-colors flex items-center justify-center gap-2">
-                    <i className="ph ph-download-simple"></i> CSVでエクスポート
-                  </button>
-                </div>
-
-                <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3">
-                   <p className="text-sm font-medium text-gray-700 dark:text-gray-300">開発・テスト用ツール</p>
-                   <button onClick={handleGenerateMock} className="w-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-medium py-2 rounded transition-colors flex items-center justify-center gap-2">
-                    <i className="ph ph-flask"></i> サンプルデータ自動生成
-                  </button>
-                  <button onClick={clearAllData} className="w-full mt-2 border border-red-300 text-red-500 font-medium py-2 rounded hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors flex items-center justify-center gap-2">
-                    <i className="ph ph-warning"></i> 全データ初期化
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-    };
-
-    // Render App
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
-
-  </script>
+    restoreUIState(defaults);
+
+    ['fileInput','jsonInput'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el) el.value='';
+    });
+
+    ['simResult','genResults'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el) el.innerHTML='';
+    });
+
+    ['urlStatus','fileStatus','jsonStatus'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el) el.textContent='';
+    });
+
+    const genBulk=document.getElementById('genBulkActions');
+    if(genBulk) genBulk.style.display='none';
+
+    // ダッシュボードへ戻して、サンプル状態を即時再描画。
+    switchTab('dashboard');
+    render();
+
+    // Safariで描画が古いまま残る場合の保険。
+    setTimeout(()=>{ render(); },80);
+    setTimeout(()=>{ render(); },300);
+
+    showNotice('全リセット完了：実データを消去し、サンプルデータに戻しました。','ok');
+  }catch(e){
+    showNotice('全リセット失敗：'+e.message,'bad');
+    alert('全リセット失敗: '+e.message);
+  }
+}
+function askReset(kind){
+  const msg = kind==='all'
+    ? '全リセットしますか？ 読み込んだCSVデータ・生成候補・入力欄を初期状態に戻します。必要なら先にSAVEしてください。'
+    : '候補・バックテスト入力などの作業欄をリセットしますか？';
+  let ok=true;
+  try{ ok=window.confirm ? confirm(msg) : true; }catch(e){ ok=true; }
+  if(!ok) return;
+  if(kind==='all') resetAllData(); else resetViewOnly();
+}
+function showNotice(message,type='ok'){
+  let box=document.getElementById('appNotice');
+  if(!box){
+    box=document.createElement('div');
+    box.id='appNotice';
+    box.style.position='fixed';
+    box.style.left='12px';
+    box.style.right='12px';
+    box.style.bottom='12px';
+    box.style.zIndex='99999';
+    box.style.padding='12px 14px';
+    box.style.borderRadius='12px';
+    box.style.fontWeight='800';
+    box.style.boxShadow='0 6px 18px rgba(0,0,0,.18)';
+    document.body.appendChild(box);
+  }
+  const isBad=type==='bad';
+  box.style.background=isBad?'#fee2e2':'#dcfce7';
+  box.style.color=isBad?'#991b1b':'#166534';
+  box.textContent=message;
+  clearTimeout(showNotice._t);
+  showNotice._t=setTimeout(()=>{ if(box) box.remove(); },2600);
+}
+function render(){
+  applyTheme();
+  const st=stats();
+  document.getElementById('kTotal').textContent=nf(st.total)+' 回';
+  document.getElementById('kAvg').textContent=st.avg;
+  document.getElementById('kOddEven').textContent= st.odd+st.even ? `${Math.round(st.odd/(st.odd+st.even)*100)}% / ${Math.round(st.even/(st.odd+st.even)*100)}%` : '-';
+  document.getElementById('kSource').textContent=state.source||'-';
+  document.getElementById('dataInfo').textContent=`現在 ${nf(st.total)}件 / 種別: ${state.source||'-'} / ファイル: ${state.fileName||'-'} / 更新: ${state.importedAt ? new Date(state.importedAt).toLocaleString('ja-JP') : '-'}`;
+  if(st.latest){
+    document.getElementById('latestBox').innerHTML=`<div class="muted">第 ${st.latest.id} 回 ${st.latest.date} / 販売額 ${yen(st.latest.sales)}</div><div style="margin:12px 0">${st.latest.numbers.map(n=>ball(n)).join('')} + ${ball(st.latest.bonus,true)}</div><div class="small">1等 ${st.latest.prizes?.[1]?.winners||0}口 ${yen(st.latest.prizes?.[1]?.amount||0)} / キャリーオーバー ${yen(st.latest.carryover||0)}</div>`;
+  }
+  document.getElementById('hotNums').innerHTML=st.numStats.slice(0,10).map(x=>`${ball(x.num)} <span class="small">${x.count}回</span>`).join(' ');
+  document.getElementById('coldNums').innerHTML=[...st.numStats].reverse().slice(0,10).map(x=>`${ball(x.num)} <span class="small">${x.count}回</span>`).join(' ');
+  renderAnalysis();
+}
+function renderAnalysis(){
+  const p=Number(document.getElementById('period').value||0); const data=p?state.drawData.slice(0,p):state.drawData; const st=stats(data); const max=Math.max(1,...st.numStats.map(x=>x.count));
+  const map=Array.from({length:43},(_,i)=>{const n=i+1;const x=st.numStats.find(s=>s.num===n);const pct=x.count/max;return `<div class="cell" style="background:rgba(37,99,235,${0.08+pct*.75});color:${pct>.65?'#fff':'#111'}">${n}<br><span class="small">${x.count}回</span></div>`}).join('');
+  document.getElementById('heat').innerHTML=map;
+  const buckets={};let seq2=0,seq3=0; data.forEach(r=>{const s=r.numbers.reduce((a,b)=>a+b,0);const b=Math.floor(s/20)*20;buckets[b]=(buckets[b]||0)+1;let run=1;for(let i=1;i<r.numbers.length;i++){if(r.numbers[i]===r.numbers[i-1]+1)run++;else{if(run===2)seq2++;if(run>=3)seq3++;run=1}} if(run===2)seq2++;if(run>=3)seq3++;});
+  document.getElementById('sumDist').innerHTML=Object.keys(buckets).sort((a,b)=>a-b).map(k=>{const pct=buckets[k]/Math.max(1,data.length)*100;return `<div class="row"><div style="width:70px">${k}〜</div><div class="bar" style="flex:1"><span style="width:${pct}%"></span></div><div style="width:55px;text-align:right">${pct.toFixed(1)}%</div></div>`}).join('');
+  document.getElementById('seqStats').innerHTML=`<p>2連番を含む回数: <b>${nf(seq2)}回</b> (${(seq2/Math.max(1,data.length)*100).toFixed(1)}%)</p><p>3連番以上を含む回数: <b>${nf(seq3)}回</b> (${(seq3/Math.max(1,data.length)*100).toFixed(1)}%)</p><p class="muted">理論上の独立性とは別に、実データ上の出現傾向を見るための指標です。</p>`;
+}
+function score(nums,mode){
+  const st=stats(); let sc=20, why=[]; const sum=nums.reduce((a,b)=>a+b,0); const odd=nums.filter(n=>n%2).length;
+  if(sum>=100&&sum<=164){sc+=25;why.push('合計値適正')} else if(sum<80||sum>180){sc-=10;why.push('合計値極端')}
+  if(odd===3){sc+=25;why.push('奇偶3:3')} else if(odd===2||odd===4){sc+=12;why.push('奇偶良好')}
+  if(nums.some((n,i)=>i&&n===nums[i-1]+1)){sc+=15;why.push('連番あり')}
+  nums.forEach(n=>{const rank=st.numStats.findIndex(x=>x.num===n); const stat=st.numStats[rank]; if(mode==='hot'&&rank<10)sc+=5; if(mode==='cold'&&(rank>32||stat.lastSeen>20))sc+=5; if(mode==='balance'&&(rank<10||stat.lastSeen>20))sc+=2;});
+  return {score:Math.max(0,Math.min(100,sc)),why:why.slice(0,3)};
+}
+function genCandidates(){
+  const mode=document.getElementById('genMode').value;
+  const cnt=Math.max(1,Math.min(20,Number(document.getElementById('genCount').value||5)));
+  const c=[];
+  for(let i=0;i<2000;i++){
+    const pool=Array.from({length:43},(_,j)=>j+1), nums=[];
+    while(nums.length<6)nums.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);
+    nums.sort((a,b)=>a-b);
+    c.push({nums,...score(nums,mode)});
+  }
+  if(mode==='random')c.sort(()=>Math.random()-.5); else c.sort((a,b)=>b.score-a.score);
+  const seen=new Set(), out=[];
+  for(const x of c){
+    const k=x.nums.join(',');
+    if(!seen.has(k)){seen.add(k);out.push(x)}
+    if(out.length>=cnt)break;
+  }
+  lastCandidates=out;
+  document.getElementById('genBulkActions').style.display=out.length?'flex':'none';
+  document.getElementById('genResults').innerHTML=out.map((x,i)=>`<div class="candidate">
+    <div><b>${String(i+1).padStart(2,'0')}</b> ${x.nums.map(n=>ball(n)).join('')}<br><span class="small muted">スコア ${x.score} / ${x.why.join(' / ')||'ランダム'}</span></div>
+    <div class="candActions">
+      <button class="secondary mini" data-use-cand="${i}">この1口を検証</button>
+      <button class="secondary mini" data-append-cand="${i}">追加入力</button>
+    </div>
+  </div>`).join('');
+}
+
+function renderCandidates(){
+  const out=Array.isArray(lastCandidates)?lastCandidates:[];
+  document.getElementById('genBulkActions').style.display=out.length?'flex':'none';
+  document.getElementById('genResults').innerHTML=out.map((x,i)=>`<div class="candidate">
+    <div><b>${String(i+1).padStart(2,'0')}</b> ${x.nums.map(n=>ball(n)).join('')}<br><span class="small muted">スコア ${x.score??'-'} / ${(x.why||[]).join(' / ')||'ランダム'}</span></div>
+    <div class="candActions">
+      <button class="secondary mini" data-use-cand="${i}">この1口を検証</button>
+      <button class="secondary mini" data-append-cand="${i}">追加入力</button>
+    </div>
+  </div>`).join('');
+}
+
+function candidateText(list){return list.map(x=>x.nums.join(',')).join('\n')}
+function useCandidate(i,append=false){
+  const c=lastCandidates[i]; if(!c)return;
+  const area=document.getElementById('simNums');
+  area.value=append && area.value.trim() ? area.value.trim()+"\n"+c.nums.join(',') : c.nums.join(',');
+  switchTab('sim');
+}
+function useAllCandidates(append=false){
+  if(!lastCandidates.length)return alert('先に候補を生成してください。');
+  const area=document.getElementById('simNums');
+  const t=candidateText(lastCandidates);
+  area.value=append && area.value.trim() ? area.value.trim()+"\n"+t : t;
+  switchTab('sim');
+}
+function parseCombos(text){
+  const rows=String(text||'').split(/\n+/).map(x=>x.trim()).filter(Boolean);
+  const combos=[];
+  rows.forEach((line,idx)=>{
+    const nums=line.split(/[,\s、]+/).map(num).filter(n=>n>=1&&n<=43);
+    const uniq=[...new Set(nums)].sort((a,b)=>a-b);
+    if(uniq.length!==6) throw new Error(`${idx+1}行目は1〜43の重複しない数字6個にしてください。`);
+    combos.push(uniq);
+  });
+  if(!combos.length) throw new Error('検証する数字を入力してください。');
+  const seen=new Set(), out=[];
+  combos.forEach(c=>{const k=c.join(','); if(!seen.has(k)){seen.add(k);out.push(c)}});
+  return out;
+}
+function checkWin(p,result,bonus){const m=p.filter(n=>result.includes(n)).length;const b=p.includes(bonus);return m===6?1:m===5&&b?2:m===5?3:m===4?4:m===3?5:0}
+function runSim(){
+  let combos;
+  try{combos=parseCombos(document.getElementById('simNums').value);}
+  catch(e){return alert(e.message);}
+  const c=Number(document.getElementById('simCount').value||0);
+  const data=c?state.drawData.slice(0,c):state.drawData;
+  const totalCounts={1:0,2:0,3:0,4:0,5:0,0:0};
+  const per=[];
+  const details=[];
+  let totalCost=0,totalWin=0;
+
+  combos.forEach((combo,ci)=>{
+    let cost=0,win=0; const counts={1:0,2:0,3:0,4:0,5:0,0:0};
+    data.forEach(r=>{
+      cost+=200; totalCost+=200;
+      const rank=checkWin(combo,r.numbers,r.bonus);
+      counts[rank]++; totalCounts[rank]++;
+      if(rank){
+        const amt=r.prizes?.[rank]?.amount||0;
+        win+=amt; totalWin+=amt;
+        details.push({ci:ci+1,nums:combo,id:r.id,date:r.date,rank,amt,result:r.numbers,bonus:r.bonus});
+      }
+    });
+    per.push({ci:ci+1,nums:combo,cost,win,profit:win-cost,recovery:win/Math.max(1,cost)*100,counts});
+  });
+
+  const profit=totalWin-totalCost;
+  const perTable='<table><thead><tr><th>候補</th><th>数字</th><th>投資額</th><th>回収額</th><th>収支</th><th>回収率</th><th>当せん内訳</th></tr></thead><tbody>'+
+    per.sort((a,b)=>b.profit-a.profit).map(x=>`<tr>
+      <td>${x.ci}</td>
+      <td>${x.nums.map(n=>ball(n)).join('')}</td>
+      <td>${yen(x.cost)}</td>
+      <td>${yen(x.win)}</td>
+      <td style="color:${x.profit>=0?'var(--ok)':'var(--danger)'}">${x.profit>=0?'+':''}${yen(x.profit)}</td>
+      <td>${x.recovery.toFixed(1)}%</td>
+      <td>1等${x.counts[1]} / 2等${x.counts[2]} / 3等${x.counts[3]} / 4等${x.counts[4]} / 5等${x.counts[5]}</td>
+    </tr>`).join('')+'</tbody></table>';
+
+  const detailTable=details.length?'<h3>当せん履歴（最大100件）</h3><table><thead><tr><th>候補</th><th>回</th><th>日付</th><th>結果</th><th>等級</th><th>当せん金</th></tr></thead><tbody>'+
+    details.sort((a,b)=>b.id-a.id||a.ci-b.ci).slice(0,100).map(d=>`<tr>
+      <td>${d.ci}</td><td>${d.id}</td><td>${d.date}</td>
+      <td>${d.result.map(n=>ball(n)).join('')} + ${ball(d.bonus,true)}</td>
+      <td>${d.rank}等</td><td>${yen(d.amt)}</td>
+    </tr>`).join('')+'</tbody></table>':'<p class="muted">当せん履歴はありません。</p>';
+
+  document.getElementById('simResult').innerHTML=`<div class="grid g4 kpi">
+    <div class="card"><div class="muted">検証口数</div><div class="v">${nf(combos.length)} 口</div></div>
+    <div class="card"><div class="muted">総投資額</div><div class="v">${yen(totalCost)}</div></div>
+    <div class="card"><div class="muted">総回収額</div><div class="v">${yen(totalWin)}</div></div>
+    <div class="card"><div class="muted">総収支 / 回収率</div><div class="v" style="font-size:20px;color:${profit>=0?'var(--ok)':'var(--danger)'}">${profit>=0?'+':''}${yen(profit)}<br>${(totalWin/Math.max(1,totalCost)*100).toFixed(1)}%</div></div>
+  </div>
+  <p>全候補合算の当せん内訳：1等 ${totalCounts[1]} / 2等 ${totalCounts[2]} / 3等 ${totalCounts[3]} / 4等 ${totalCounts[4]} / 5等 ${totalCounts[5]}</p>
+  <h3>候補別バックテスト結果</h3>${perTable}${detailTable}`;
+}
+function applyData(data,source,fileName,errors=[]){state.drawData=data;state.source=source;state.fileName=fileName;state.importedAt=new Date().toISOString();saveState();render();alert(`CSVを読み込みました。\n件数: ${data.length}回分\n警告: ${errors.length}件`)}
+function switchTab(id){
+  document.querySelectorAll('.nav button,.tab').forEach(x=>x.classList.remove('active'));
+  const btn=document.querySelector(`.nav button[data-tab="${id}"]`);
+  if(btn)btn.classList.add('active');
+  const tab=document.getElementById(id);
+  if(tab)tab.classList.add('active');
+  render();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function currentUIState(){
+  return {
+    csvUrl:document.getElementById('csvUrl')?.value||'',
+    period:document.getElementById('period')?.value||'0',
+    genMode:document.getElementById('genMode')?.value||'balance',
+    genCount:document.getElementById('genCount')?.value||'5',
+    simNums:document.getElementById('simNums')?.value||'1,2,3,4,5,6',
+    simCount:document.getElementById('simCount')?.value||'50'
+  };
+}
+function restoreUIState(ui={}){
+  const set=(id,val)=>{const el=document.getElementById(id); if(el && val!==undefined && val!==null) el.value=val;};
+  set('csvUrl',ui.csvUrl);
+  set('period',ui.period);
+  set('genMode',ui.genMode);
+  set('genCount',ui.genCount);
+  set('simNums',ui.simNums);
+  set('simCount',ui.simCount);
+  const open=document.getElementById('openCsv');
+  const url=document.getElementById('csvUrl')?.value;
+  if(open && url) open.href=url;
+}
+function validateLoadedState(obj){
+  const s=obj && obj.state ? obj.state : obj;
+  if(!s || !Array.isArray(s.drawData)) throw new Error('このJSONはロト6シミュレーターのSAVEデータではありません。');
+  s.drawData.forEach((r,i)=>{
+    if(!Array.isArray(r.numbers) || r.numbers.length!==6) throw new Error(`${i+1}件目の数字データが不正です。`);
+    const nums=[...new Set(r.numbers.map(Number))];
+    if(nums.length!==6 || nums.some(n=>!Number.isInteger(n)||n<1||n>43)) throw new Error(`${i+1}件目の数字は1〜43の重複しない6個にしてください。`);
+    r.numbers=nums.sort((a,b)=>a-b);
+    r.bonus=Number(r.bonus||0);
+    r.id=Number(r.id||0);
+    r.sales=Number(r.sales||0);
+    r.carryover=Number(r.carryover||0);
+    r.prizes=r.prizes||{1:{winners:0,amount:0},2:{winners:0,amount:0},3:{winners:0,amount:0},4:{winners:0,amount:0},5:{winners:0,amount:0}};
+    for(let k=1;k<=5;k++){
+      r.prizes[k]=r.prizes[k]||{winners:0,amount:0};
+      r.prizes[k].winners=Number(r.prizes[k].winners||0);
+      r.prizes[k].amount=Number(r.prizes[k].amount||0);
+    }
+  });
+  return {
+    drawData:s.drawData.sort((a,b)=>b.id-a.id),
+    source:s.source||'JSON LOAD',
+    fileName:s.fileName||'JSONセーブデータ',
+    importedAt:s.importedAt||new Date().toISOString(),
+    theme:s.theme||state.theme||'system'
+  };
+}
+async function saveJsonState(){
+  const payload={
+    app:'Loto6 リアルデータ対応シミュレーター',
+    version:'v6',
+    savedAt:new Date().toISOString(),
+    state:state,
+    lastCandidates:lastCandidates,
+    ui:currentUIState()
+  };
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json;charset=utf-8'});
+  await saveBlob(blob,'loto6_save_'+new Date().toISOString().slice(0,10)+'.json');
+  const js=document.getElementById('jsonStatus');
+  if(js) js.textContent='SAVE完了: JSONファイルを保存しました。';
+}
+function loadJsonFile(file){
+  const js=document.getElementById('jsonStatus');
+  if(!file) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const payload=JSON.parse(String(r.result||''));
+      const loaded=validateLoadedState(payload);
+      state={...defaultState,...loaded};
+      state.source='JSON LOAD';
+      state.fileName=file.name;
+      state.importedAt=new Date().toISOString();
+      lastCandidates=Array.isArray(payload.lastCandidates)?payload.lastCandidates:[];
+      saveState();
+      restoreUIState(payload.ui||{});
+      render();
+      if(lastCandidates.length) renderCandidates();
+      if(js) js.textContent=`LOAD完了: ${file.name} / ${nf(state.drawData.length)}件を復元しました。`;
+      alert('JSONをLOADしました。アプリ状態を復元しました。');
+    }catch(e){
+      if(js) js.textContent='LOAD失敗: '+e.message;
+      alert('JSON LOAD失敗: '+e.message);
+    }
+  };
+  r.readAsText(file,'utf-8');
+}
+
+document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
+['dashTheme','settingsTheme'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el) el.addEventListener('change',e=>setTheme(e.target.value));
+});
+['resetViewBtn','settingsResetViewBtn'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el) el.addEventListener('click',e=>{e.preventDefault(); e.stopPropagation(); askReset('view');});
+});
+['resetAllBtn','settingsResetAllBtn'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el) el.addEventListener('click',e=>{e.preventDefault(); e.stopPropagation(); askReset('all');});
+});
+['forceSampleBtn','settingsForceSampleBtn'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el) el.addEventListener('click',e=>{e.preventDefault(); e.stopPropagation(); resetAllData();});
+});
+// 念のため：一部ブラウザで個別リスナーが外れた場合でも動く保険
+document.addEventListener('click',e=>{
+  const btn=e.target.closest && e.target.closest('#resetViewBtn,#settingsResetViewBtn,#resetAllBtn,#settingsResetAllBtn,#forceSampleBtn,#settingsForceSampleBtn');
+  if(!btn) return;
+  e.preventDefault();
+  e.stopPropagation();
+  if(btn.id==='forceSampleBtn' || btn.id==='settingsForceSampleBtn') resetAllData();
+  else if(btn.id==='resetAllBtn' || btn.id==='settingsResetAllBtn') askReset('all');
+  else askReset('view');
+},true);
+
+document.getElementById('period').addEventListener('change',renderAnalysis);
+document.getElementById('genBtn').addEventListener('click',genCandidates);
+document.getElementById('genResults').addEventListener('click',e=>{
+  const use=e.target.closest('[data-use-cand]');
+  const app=e.target.closest('[data-append-cand]');
+  if(use)useCandidate(Number(use.dataset.useCand),false);
+  if(app)useCandidate(Number(app.dataset.appendCand),true);
+});
+document.getElementById('useAllCandBtn').addEventListener('click',()=>useAllCandidates(false));
+document.getElementById('appendAllCandBtn').addEventListener('click',()=>useAllCandidates(true));
+document.getElementById('simBtn').addEventListener('click',runSim);
+document.getElementById('csvUrl').addEventListener('input',e=>document.getElementById('openCsv').href=e.target.value);
+document.getElementById('loadUrlBtn').addEventListener('click',async()=>{
+  const url=document.getElementById('csvUrl').value.trim(); if(!url)return alert('URLを入力してください。');
+  const s=document.getElementById('urlStatus'); s.textContent='取得中...';
+  try{const res=await fetch(url,{cache:'no-store'}); if(!res.ok)throw new Error('HTTP '+res.status); const buf=await res.arrayBuffer(); const dec=decode(buf); const parsed=parseCSV(dec.text); applyData(parsed.data,'実データURL',`${url} (${dec.label})`,parsed.errors); s.textContent='読み込み完了';}
+  catch(e){s.textContent='直接読み込み失敗: '+e.message+'。CORS制限の場合はCSVを保存してファイル取込してください。';}
+});
+document.getElementById('fileInput').addEventListener('change',e=>{const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=()=>{try{const dec=decode(r.result); const parsed=parseCSV(dec.text); applyData(parsed.data,'実データCSV',`${f.name} (${dec.label})`,parsed.errors); document.getElementById('fileStatus').textContent='読み込み完了';}catch(err){alert('CSV読み込み失敗: '+err.message)} finally{e.target.value=''}}; r.readAsArrayBuffer(f);});
+document.getElementById('chooseDirBtn').addEventListener('click',chooseSaveDir);
+document.getElementById('saveUrlCsvBtn').addEventListener('click',saveUrlCsvToDir);
+document.getElementById('exportBtn').addEventListener('click',exportCurrentData);
+document.getElementById('saveJsonBtn').addEventListener('click',saveJsonState);
+document.getElementById('jsonInput').addEventListener('change',e=>{loadJsonFile(e.target.files[0]); e.target.value='';});
+
+function safeFileName(name){
+  return String(name||'loto6_data.csv').replace(/[\\/:*?"<>|]/g,'_').replace(/\s+/g,'_').slice(0,120);
+}
+function buildExportCSV(){
+  let csv='抽せん回,日付,数字1,数字2,数字3,数字4,数字5,数字6,ボーナス,販売実績額,1等口数,1等賞金,2等口数,2等賞金,3等口数,3等賞金,4等口数,4等賞金,5等口数,5等賞金,キャリーオーバー\n';
+  state.drawData.forEach(d=>{
+    csv += [d.id,d.date,...d.numbers,d.bonus,d.sales,d.prizes?.[1]?.winners||0,d.prizes?.[1]?.amount||0,d.prizes?.[2]?.winners||0,d.prizes?.[2]?.amount||0,d.prizes?.[3]?.winners||0,d.prizes?.[3]?.amount||0,d.prizes?.[4]?.winners||0,d.prizes?.[4]?.amount||0,d.prizes?.[5]?.winners||0,d.prizes?.[5]?.amount||0,d.carryover||0].join(',')+'\n';
+  });
+  return csv;
+}
+function fallbackDownload(blob, filename){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+async function saveBlob(blob, filename){
+  filename=safeFileName(filename);
+  const s=document.getElementById('dirStatus');
+  if(saveDirHandle && saveDirHandle.getFileHandle){
+    try{
+      const fh=await saveDirHandle.getFileHandle(filename,{create:true});
+      const w=await fh.createWritable();
+      await w.write(blob);
+      await w.close();
+      s.textContent='保存完了: '+saveDirHandle.name+' / '+filename;
+      return;
+    }catch(e){
+      s.textContent='指定フォルダ保存に失敗: '+e.message+'。通常ダウンロードに切り替えます。';
+    }
+  }
+  fallbackDownload(blob,filename);
+  s.textContent='通常ダウンロードで保存しました: '+filename;
+}
+async function chooseSaveDir(){
+  const s=document.getElementById('dirStatus');
+  if(!window.showDirectoryPicker){
+    s.textContent='このブラウザはフォルダ指定保存に未対応です。通常ダウンロード保存を使います。';
+    return;
+  }
+  try{
+    saveDirHandle=await window.showDirectoryPicker({mode:'readwrite'});
+    s.textContent='保存先: '+saveDirHandle.name;
+  }catch(e){
+    if(e.name==='AbortError') return;
+    s.textContent='保存先選択に失敗: '+e.message;
+  }
+}
+async function exportCurrentData(){
+  if(!state.drawData || !state.drawData.length){alert('出力するデータがありません。');return;}
+  const csv=buildExportCSV();
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  await saveBlob(blob,'loto6_data_'+new Date().toISOString().slice(0,10)+'.csv');
+}
+async function saveUrlCsvToDir(){
+  const url=document.getElementById('csvUrl').value.trim();
+  const s=document.getElementById('dirStatus');
+  if(!url){alert('CSV URLを入力してください。');return;}
+  try{
+    s.textContent='URLのCSVを取得中...';
+    const res=await fetch(url,{cache:'no-store'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const blob=await res.blob();
+    let name='loto6_source_'+new Date().toISOString().slice(0,10)+'.csv';
+    try{
+      const u=new URL(url);
+      const last=u.pathname.split('/').filter(Boolean).pop();
+      if(last && /\.csv($|\?)/i.test(last)) name=last.replace(/\.csv$/i,'')+'_'+new Date().toISOString().slice(0,10)+'.csv';
+    }catch(e){}
+    await saveBlob(blob,name);
+  }catch(e){
+    s.textContent='URLのCSV保存に失敗: '+e.message+'。CORS制限の場合は「CSVを開く」から手動保存してください。';
+  }
+}
+
+document.getElementById('sampleBtn').addEventListener('click',()=>{if(confirm('現在のデータをサンプルデータで置き換えますか？')){state.drawData=genMock(500);state.source='サンプル';state.fileName='手動生成サンプル';state.importedAt=new Date().toISOString();saveState();render();}});
+document.getElementById('clearBtn').addEventListener('click',()=>{if(confirm('全データを初期化しますか？ 必要なら先にSAVEしてください。')) resetAllData();});
+window.addEventListener('error',e=>{document.body.insertAdjacentHTML('afterbegin',`<div style="background:#fee2e2;color:#991b1b;padding:12px;font-weight:bold">エラー: ${e.message}</div>`)});
+render();
+})();
+</script>
 </body>
 </html>
